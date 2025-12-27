@@ -1,0 +1,294 @@
+import bcrypt from "bcrypt";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { prisma } from "../../utils/prisma";
+import ApiError from "../../utils/ApiError";
+import {
+  AboutUserQueryParams,
+  LoginUserPayload,
+  RegisterUserPayload,
+  UserUpdatePayload,
+} from "./auth.types";
+import {
+  JWT_ACCESS_TOKEN_TTL,
+  REFRESH_TOKEN_EXPIRY_MS,
+} from "../../utils/constants";
+import "dotenv/config";
+
+export const registerUserService = async (payload: RegisterUserPayload) => {
+  try {
+    const { email, password, firstName, lastName } = payload;
+
+    if (!email || !email.includes("@")) {
+      throw new ApiError(400, "Invalid email address");
+    }
+
+    if (!password || password.length < 6) {
+      throw new ApiError(400, "Password must be at least 6 characters long");
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      throw new ApiError(409, "User already exists");
+    }
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: { email, password: hashPassword, firstName, lastName },
+      omit: { password: true, createdAt: true, updatedAt: true },
+    });
+
+    // Access token
+    const accessToken = jwt.sign(
+      { userId: user.id, type: "USER" },
+      process.env.JWT_SECRET_KEY!,
+      {
+        expiresIn: JWT_ACCESS_TOKEN_TTL,
+      }
+    );
+
+    // Refresh token
+    const refreshToken = crypto.randomBytes(64).toString("hex");
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    await prisma.userToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: refreshTokenHash,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      },
+    });
+
+    return {
+      user,
+      accessToken,
+      refreshToken,
+    };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const loginUserService = async (payload: LoginUserPayload) => {
+  try {
+    const { email, password } = payload;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.password) {
+      throw new ApiError(404, "User don't exist");
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      throw new ApiError(401, "Invalid credentials");
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user.id, type: "USER" },
+      process.env.JWT_SECRET_KEY!,
+      {
+        expiresIn: JWT_ACCESS_TOKEN_TTL,
+      }
+    );
+
+    const refreshToken = crypto.randomBytes(64).toString("hex");
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    await prisma.userToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: refreshTokenHash,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      },
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+      accessToken,
+      refreshToken,
+    };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const refreshTokenService = async (refreshToken: string) => {
+  try {
+    if (!refreshToken) {
+      throw new ApiError(401, "Missing refresh token");
+    }
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    const storedToken = await prisma.userToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!storedToken || storedToken.revoked) {
+      if (storedToken?.userId) {
+        // revoke all sessions for safety
+        await prisma.userToken.updateMany({
+          where: { userId: storedToken.userId },
+          data: { revoked: true },
+        });
+      }
+
+      throw new ApiError(401, "Invalid refresh token");
+    }
+
+    // Expired
+    if (storedToken.expiresAt < new Date()) {
+      throw new ApiError(401, "Refresh token expired");
+    }
+
+    // Rotate: revoke old token
+    await prisma.userToken.update({
+      where: { id: storedToken.id },
+      data: { revoked: true },
+    });
+
+    // Issue new refresh token
+    const newRefreshToken = crypto.randomBytes(64).toString("hex");
+    const newRefreshTokenHash = crypto
+      .createHash("sha256")
+      .update(newRefreshToken)
+      .digest("hex");
+
+    await prisma.userToken.create({
+      data: {
+        userId: storedToken.userId,
+        tokenHash: newRefreshTokenHash,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      },
+    });
+
+    // New access token
+    const newAccessToken = jwt.sign(
+      { userId: storedToken.userId },
+      process.env.JWT_SECRET_KEY!,
+      { expiresIn: JWT_ACCESS_TOKEN_TTL }
+    );
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const updateUserService = async (
+  payload: UserUpdatePayload,
+  userId: string
+) => {
+  try {
+    if (!userId) {
+      throw new ApiError(400, "UserId is required");
+    }
+
+    const USER_UPDATE_FIELDS = [
+      "firstName",
+      "lastName",
+      "phoneNumber",
+      "email",
+      "emailVerified",
+      "phoneVerified",
+      "emailVerifiedAt",
+      "phoneVerifiedAt",
+    ] as const;
+
+    const updatedPayload: Partial<
+      Record<(typeof USER_UPDATE_FIELDS)[number], unknown>
+    > = {};
+
+    for (const key of USER_UPDATE_FIELDS) {
+      if (
+        payload[key] !== undefined &&
+        payload[key] !== null &&
+        typeof payload[key] === "string" &&
+        payload[key].length > 0
+      ) {
+        updatedPayload[key] = payload[key];
+      }
+    }
+
+    if (Object.keys(updatedPayload).length === 0) {
+      throw new ApiError(400, "No valid fields to update");
+    }
+
+    return prisma.user.update({
+      where: { id: userId },
+      data: updatedPayload as any,
+      omit: {
+        password: false,
+      },
+    });
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const aboutUserService = async (
+  userId: string,
+  queryParams: AboutUserQueryParams
+) => {
+  try {
+    if (!userId) {
+      throw new ApiError(400, "UserId is required");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      omit: {
+        password: true,
+      },
+      include: {
+        addresses: queryParams.address === "true" ? true : false,
+        cartItems: queryParams.cart === "true" ? true : false,
+        orders: queryParams.order === "true" ? true : false,
+        _count: {
+          select: {
+            addresses: queryParams.addressCount === "true" ? true : false,
+            cartItems: queryParams.cartCount === "true" ? true : false,
+            orders: queryParams.orderCount === "true" ? true : false,
+          },
+        },
+      },
+    });
+
+    return user;
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
