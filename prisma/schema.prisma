@@ -107,6 +107,7 @@ model Product {
   attributesSchema Json?
   images           String[]
   isActive         Boolean  @default(true)
+  isFeatured       Boolean  @default(false)
 
   variants  ProductVariant[]
   createdAt DateTime         @default(now())
