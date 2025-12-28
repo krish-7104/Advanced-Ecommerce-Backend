@@ -258,7 +258,8 @@ model AdminUserToken {
   id        String    @id @default(cuid())
   userId    String
   user      AdminUser @relation(fields: [userId], references: [id])
-  token     String    @unique
+  tokenHash String    @unique
+  revoked   Boolean   @default(false)
   createdAt DateTime  @default(now())
   expiresAt DateTime
 }

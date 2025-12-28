@@ -292,3 +292,26 @@ export const aboutUserService = async (
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };
+
+export const logoutUserService = async (refreshToken: string) => {
+  try {
+    if (!refreshToken) {
+      throw new ApiError(400, "Refresh token is required");
+    }
+
+    const token = await prisma.adminUserToken.findUnique({
+      where: { tokenHash: refreshToken },
+    });
+
+    if (token) {
+      await prisma.adminUserToken.delete({
+        where: { id: token.id },
+      });
+    }
+
+    return { message: "Logged out successfully" };
+  } catch (error: any) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};

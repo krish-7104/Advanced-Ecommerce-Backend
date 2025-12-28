@@ -6,6 +6,7 @@ import {
   refreshTokenService,
   updateUserService,
   aboutUserService,
+  logoutUserService,
 } from "./auth.service";
 import ApiResponse from "../../utils/ApiResponse";
 import {
@@ -77,10 +78,14 @@ export const aboutUserController = async (req: Request, res: Response) => {
 
   const user = await aboutUserService(userId, queryParams);
 
-  return res.send(new ApiResponse(200, user, "User details updated"));
+  return res.send(new ApiResponse(200, user, "User details get successfully"));
 };
 
-export const LogoutController = async (req: Request, res: Response) => {
+export const logoutUserController = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refresh_token;
+
+  await logoutUserService(refreshToken);
+
   res.clearCookie("access_token", ACCESS_COOKIE_OPTIONS);
   res.clearCookie("refresh_token", REFRESH_COOKIE_OPTIONS);
 

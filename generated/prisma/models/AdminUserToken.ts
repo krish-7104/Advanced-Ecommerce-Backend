@@ -27,7 +27,8 @@ export type AggregateAdminUserToken = {
 export type AdminUserTokenMinAggregateOutputType = {
   id: string | null
   userId: string | null
-  token: string | null
+  tokenHash: string | null
+  revoked: boolean | null
   createdAt: Date | null
   expiresAt: Date | null
 }
@@ -35,7 +36,8 @@ export type AdminUserTokenMinAggregateOutputType = {
 export type AdminUserTokenMaxAggregateOutputType = {
   id: string | null
   userId: string | null
-  token: string | null
+  tokenHash: string | null
+  revoked: boolean | null
   createdAt: Date | null
   expiresAt: Date | null
 }
@@ -43,7 +45,8 @@ export type AdminUserTokenMaxAggregateOutputType = {
 export type AdminUserTokenCountAggregateOutputType = {
   id: number
   userId: number
-  token: number
+  tokenHash: number
+  revoked: number
   createdAt: number
   expiresAt: number
   _all: number
@@ -53,7 +56,8 @@ export type AdminUserTokenCountAggregateOutputType = {
 export type AdminUserTokenMinAggregateInputType = {
   id?: true
   userId?: true
-  token?: true
+  tokenHash?: true
+  revoked?: true
   createdAt?: true
   expiresAt?: true
 }
@@ -61,7 +65,8 @@ export type AdminUserTokenMinAggregateInputType = {
 export type AdminUserTokenMaxAggregateInputType = {
   id?: true
   userId?: true
-  token?: true
+  tokenHash?: true
+  revoked?: true
   createdAt?: true
   expiresAt?: true
 }
@@ -69,7 +74,8 @@ export type AdminUserTokenMaxAggregateInputType = {
 export type AdminUserTokenCountAggregateInputType = {
   id?: true
   userId?: true
-  token?: true
+  tokenHash?: true
+  revoked?: true
   createdAt?: true
   expiresAt?: true
   _all?: true
@@ -150,7 +156,8 @@ export type AdminUserTokenGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 export type AdminUserTokenGroupByOutputType = {
   id: string
   userId: string
-  token: string
+  tokenHash: string
+  revoked: boolean
   createdAt: Date
   expiresAt: Date
   _count: AdminUserTokenCountAggregateOutputType | null
@@ -179,7 +186,8 @@ export type AdminUserTokenWhereInput = {
   NOT?: Prisma.AdminUserTokenWhereInput | Prisma.AdminUserTokenWhereInput[]
   id?: Prisma.StringFilter<"AdminUserToken"> | string
   userId?: Prisma.StringFilter<"AdminUserToken"> | string
-  token?: Prisma.StringFilter<"AdminUserToken"> | string
+  tokenHash?: Prisma.StringFilter<"AdminUserToken"> | string
+  revoked?: Prisma.BoolFilter<"AdminUserToken"> | boolean
   createdAt?: Prisma.DateTimeFilter<"AdminUserToken"> | Date | string
   expiresAt?: Prisma.DateTimeFilter<"AdminUserToken"> | Date | string
   user?: Prisma.XOR<Prisma.AdminUserScalarRelationFilter, Prisma.AdminUserWhereInput>
@@ -188,7 +196,8 @@ export type AdminUserTokenWhereInput = {
 export type AdminUserTokenOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  token?: Prisma.SortOrder
+  tokenHash?: Prisma.SortOrder
+  revoked?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   user?: Prisma.AdminUserOrderByWithRelationInput
@@ -196,20 +205,22 @@ export type AdminUserTokenOrderByWithRelationInput = {
 
 export type AdminUserTokenWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  token?: string
+  tokenHash?: string
   AND?: Prisma.AdminUserTokenWhereInput | Prisma.AdminUserTokenWhereInput[]
   OR?: Prisma.AdminUserTokenWhereInput[]
   NOT?: Prisma.AdminUserTokenWhereInput | Prisma.AdminUserTokenWhereInput[]
   userId?: Prisma.StringFilter<"AdminUserToken"> | string
+  revoked?: Prisma.BoolFilter<"AdminUserToken"> | boolean
   createdAt?: Prisma.DateTimeFilter<"AdminUserToken"> | Date | string
   expiresAt?: Prisma.DateTimeFilter<"AdminUserToken"> | Date | string
   user?: Prisma.XOR<Prisma.AdminUserScalarRelationFilter, Prisma.AdminUserWhereInput>
-}, "id" | "token">
+}, "id" | "tokenHash">
 
 export type AdminUserTokenOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  token?: Prisma.SortOrder
+  tokenHash?: Prisma.SortOrder
+  revoked?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   _count?: Prisma.AdminUserTokenCountOrderByAggregateInput
@@ -223,14 +234,16 @@ export type AdminUserTokenScalarWhereWithAggregatesInput = {
   NOT?: Prisma.AdminUserTokenScalarWhereWithAggregatesInput | Prisma.AdminUserTokenScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"AdminUserToken"> | string
   userId?: Prisma.StringWithAggregatesFilter<"AdminUserToken"> | string
-  token?: Prisma.StringWithAggregatesFilter<"AdminUserToken"> | string
+  tokenHash?: Prisma.StringWithAggregatesFilter<"AdminUserToken"> | string
+  revoked?: Prisma.BoolWithAggregatesFilter<"AdminUserToken"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AdminUserToken"> | Date | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"AdminUserToken"> | Date | string
 }
 
 export type AdminUserTokenCreateInput = {
   id?: string
-  token: string
+  tokenHash: string
+  revoked?: boolean
   createdAt?: Date | string
   expiresAt: Date | string
   user: Prisma.AdminUserCreateNestedOneWithoutAdminUserTokensInput
@@ -239,14 +252,16 @@ export type AdminUserTokenCreateInput = {
 export type AdminUserTokenUncheckedCreateInput = {
   id?: string
   userId: string
-  token: string
+  tokenHash: string
+  revoked?: boolean
   createdAt?: Date | string
   expiresAt: Date | string
 }
 
 export type AdminUserTokenUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.AdminUserUpdateOneRequiredWithoutAdminUserTokensNestedInput
@@ -255,7 +270,8 @@ export type AdminUserTokenUpdateInput = {
 export type AdminUserTokenUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -263,14 +279,16 @@ export type AdminUserTokenUncheckedUpdateInput = {
 export type AdminUserTokenCreateManyInput = {
   id?: string
   userId: string
-  token: string
+  tokenHash: string
+  revoked?: boolean
   createdAt?: Date | string
   expiresAt: Date | string
 }
 
 export type AdminUserTokenUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -278,7 +296,8 @@ export type AdminUserTokenUpdateManyMutationInput = {
 export type AdminUserTokenUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -296,7 +315,8 @@ export type AdminUserTokenOrderByRelationAggregateInput = {
 export type AdminUserTokenCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  token?: Prisma.SortOrder
+  tokenHash?: Prisma.SortOrder
+  revoked?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
 }
@@ -304,7 +324,8 @@ export type AdminUserTokenCountOrderByAggregateInput = {
 export type AdminUserTokenMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  token?: Prisma.SortOrder
+  tokenHash?: Prisma.SortOrder
+  revoked?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
 }
@@ -312,7 +333,8 @@ export type AdminUserTokenMaxOrderByAggregateInput = {
 export type AdminUserTokenMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  token?: Prisma.SortOrder
+  tokenHash?: Prisma.SortOrder
+  revoked?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
 }
@@ -361,14 +383,16 @@ export type AdminUserTokenUncheckedUpdateManyWithoutUserNestedInput = {
 
 export type AdminUserTokenCreateWithoutUserInput = {
   id?: string
-  token: string
+  tokenHash: string
+  revoked?: boolean
   createdAt?: Date | string
   expiresAt: Date | string
 }
 
 export type AdminUserTokenUncheckedCreateWithoutUserInput = {
   id?: string
-  token: string
+  tokenHash: string
+  revoked?: boolean
   createdAt?: Date | string
   expiresAt: Date | string
 }
@@ -405,35 +429,40 @@ export type AdminUserTokenScalarWhereInput = {
   NOT?: Prisma.AdminUserTokenScalarWhereInput | Prisma.AdminUserTokenScalarWhereInput[]
   id?: Prisma.StringFilter<"AdminUserToken"> | string
   userId?: Prisma.StringFilter<"AdminUserToken"> | string
-  token?: Prisma.StringFilter<"AdminUserToken"> | string
+  tokenHash?: Prisma.StringFilter<"AdminUserToken"> | string
+  revoked?: Prisma.BoolFilter<"AdminUserToken"> | boolean
   createdAt?: Prisma.DateTimeFilter<"AdminUserToken"> | Date | string
   expiresAt?: Prisma.DateTimeFilter<"AdminUserToken"> | Date | string
 }
 
 export type AdminUserTokenCreateManyUserInput = {
   id?: string
-  token: string
+  tokenHash: string
+  revoked?: boolean
   createdAt?: Date | string
   expiresAt: Date | string
 }
 
 export type AdminUserTokenUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminUserTokenUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AdminUserTokenUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
+  tokenHash?: Prisma.StringFieldUpdateOperationsInput | string
+  revoked?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -443,7 +472,8 @@ export type AdminUserTokenUncheckedUpdateManyWithoutUserInput = {
 export type AdminUserTokenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
-  token?: boolean
+  tokenHash?: boolean
+  revoked?: boolean
   createdAt?: boolean
   expiresAt?: boolean
   user?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
@@ -452,7 +482,8 @@ export type AdminUserTokenSelect<ExtArgs extends runtime.Types.Extensions.Intern
 export type AdminUserTokenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
-  token?: boolean
+  tokenHash?: boolean
+  revoked?: boolean
   createdAt?: boolean
   expiresAt?: boolean
   user?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
@@ -461,7 +492,8 @@ export type AdminUserTokenSelectCreateManyAndReturn<ExtArgs extends runtime.Type
 export type AdminUserTokenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
-  token?: boolean
+  tokenHash?: boolean
+  revoked?: boolean
   createdAt?: boolean
   expiresAt?: boolean
   user?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
@@ -470,12 +502,13 @@ export type AdminUserTokenSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
 export type AdminUserTokenSelectScalar = {
   id?: boolean
   userId?: boolean
-  token?: boolean
+  tokenHash?: boolean
+  revoked?: boolean
   createdAt?: boolean
   expiresAt?: boolean
 }
 
-export type AdminUserTokenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "token" | "createdAt" | "expiresAt", ExtArgs["result"]["adminUserToken"]>
+export type AdminUserTokenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "tokenHash" | "revoked" | "createdAt" | "expiresAt", ExtArgs["result"]["adminUserToken"]>
 export type AdminUserTokenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
 }
@@ -494,7 +527,8 @@ export type $AdminUserTokenPayload<ExtArgs extends runtime.Types.Extensions.Inte
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string
-    token: string
+    tokenHash: string
+    revoked: boolean
     createdAt: Date
     expiresAt: Date
   }, ExtArgs["result"]["adminUserToken"]>
@@ -923,7 +957,8 @@ export interface Prisma__AdminUserTokenClient<T, Null = never, ExtArgs extends r
 export interface AdminUserTokenFieldRefs {
   readonly id: Prisma.FieldRef<"AdminUserToken", 'String'>
   readonly userId: Prisma.FieldRef<"AdminUserToken", 'String'>
-  readonly token: Prisma.FieldRef<"AdminUserToken", 'String'>
+  readonly tokenHash: Prisma.FieldRef<"AdminUserToken", 'String'>
+  readonly revoked: Prisma.FieldRef<"AdminUserToken", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"AdminUserToken", 'DateTime'>
   readonly expiresAt: Prisma.FieldRef<"AdminUserToken", 'DateTime'>
 }

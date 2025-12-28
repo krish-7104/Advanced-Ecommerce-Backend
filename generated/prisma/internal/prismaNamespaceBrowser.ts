@@ -255,7 +255,8 @@ export type AdminUserScalarFieldEnum = (typeof AdminUserScalarFieldEnum)[keyof t
 export const AdminUserTokenScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  token: 'token',
+  tokenHash: 'tokenHash',
+  revoked: 'revoked',
   createdAt: 'createdAt',
   expiresAt: 'expiresAt'
 } as const

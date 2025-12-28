@@ -2,7 +2,7 @@ import express from "express";
 import {
   aboutUserController,
   loginUserController,
-  LogoutController,
+  logoutUserController,
   refreshTokenController,
   registerUserController,
   updateUserController,
@@ -30,6 +30,6 @@ router.get("/about/:userId", authMiddleware, limitToAdmin, aboutUserController);
 router.post("/forget-password", () => {});
 router.post("/update-password", () => {});
 
-router.post("/logout", authMiddleware, LogoutController);
+router.post("/logout", authMiddleware, logoutUserController);
 
 export default router;

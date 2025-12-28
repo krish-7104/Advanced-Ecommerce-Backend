@@ -4,6 +4,8 @@ import {
   registerAdminService,
   loginAdminService,
   logoutAdminService,
+  aboutAdminService,
+  refreshAdminTokenService,
 } from "./admin-auth.service";
 import ApiResponse from "../../../utils/ApiResponse";
 import {
@@ -54,4 +56,31 @@ export const logoutAdminController = async (req: Request, res: Response) => {
   res.clearCookie("refresh_token", REFRESH_COOKIE_OPTIONS);
 
   return res.send(new ApiResponse(200, [], "Logged out successfully"));
+};
+
+export const aboutAdminController = async (req: Request, res: Response) => {
+  const userId = req?.user?.userId;
+
+  if (!userId) {
+    throw new ApiError(400, "userId is missing");
+  }
+
+  const user = await aboutAdminService(userId);
+
+  return res.send(new ApiResponse(200, user, "Admin details get successfull"));
+};
+
+export const refreshAdminTokenController = async (
+  req: Request,
+  res: Response
+) => {
+  const refreshToken = req.cookies?.refresh_token;
+
+  const { accessToken, refreshToken: newRefreshToken } =
+    await refreshAdminTokenService(refreshToken);
+
+  res.cookie("access_token", accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie("refresh_token", newRefreshToken, REFRESH_COOKIE_OPTIONS);
+
+  return res.send(new ApiResponse(200, [], "Session refreshed"));
 };

@@ -23,8 +23,10 @@ export const authMiddleware = (
       process.env.JWT_SECRET_KEY!
     ) as JwtPayload;
     req.user = payload;
+
     return next();
-  } catch {
+  } catch (error) {
+    console.log(error);
     return next(new ApiError(401, "Invalid or expired token"));
   }
 };
