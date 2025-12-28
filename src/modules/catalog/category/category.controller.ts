@@ -26,7 +26,7 @@ export const getAllCategorieController = async (
 ) => {
   const queryParams = req.query;
   const categories = await getAllCategoriesService(queryParams);
-  res.send(new ApiResponse(201, categories, "Categories get successfully!"));
+  res.send(new ApiResponse(200, categories, "Categories get successfully!"));
 };
 
 export const getCategoryByIdController = async (
