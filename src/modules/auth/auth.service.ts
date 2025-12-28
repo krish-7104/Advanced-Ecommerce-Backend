@@ -48,7 +48,7 @@ export const registerUserService = async (payload: RegisterUserPayload) => {
       }
     );
 
-    // Refresh token
+    // Generates a refresh token hash it and store it in db
     const refreshToken = crypto.randomBytes(64).toString("hex");
     const refreshTokenHash = crypto
       .createHash("sha256")
@@ -85,11 +85,13 @@ export const loginUserService = async (payload: LoginUserPayload) => {
       throw new ApiError(404, "User don't exist");
     }
 
+    // validates the passwotd
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       throw new ApiError(401, "Invalid credentials");
     }
 
+    // create access token jwt
     const accessToken = jwt.sign(
       { userId: user.id, type: "USER" },
       process.env.JWT_SECRET_KEY!,
@@ -98,6 +100,7 @@ export const loginUserService = async (payload: LoginUserPayload) => {
       }
     );
 
+    // Generate refresh token hash it and store it in db
     const refreshToken = crypto.randomBytes(64).toString("hex");
     const refreshTokenHash = crypto
       .createHash("sha256")
@@ -119,78 +122,6 @@ export const loginUserService = async (payload: LoginUserPayload) => {
       },
       accessToken,
       refreshToken,
-    };
-  } catch (error: any) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(500, error?.message || "Something Went Wrong");
-  }
-};
-
-export const refreshTokenService = async (refreshToken: string) => {
-  try {
-    if (!refreshToken) {
-      throw new ApiError(401, "Missing refresh token");
-    }
-
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(refreshToken)
-      .digest("hex");
-
-    const storedToken = await prisma.userToken.findUnique({
-      where: { tokenHash },
-    });
-
-    if (!storedToken || storedToken.revoked) {
-      if (storedToken?.userId) {
-        // revoke all sessions for safety
-        await prisma.userToken.updateMany({
-          where: { userId: storedToken.userId },
-          data: { revoked: true },
-        });
-      }
-
-      throw new ApiError(401, "Invalid refresh token");
-    }
-
-    // Expired
-    if (storedToken.expiresAt < new Date()) {
-      throw new ApiError(401, "Refresh token expired");
-    }
-
-    // Rotate: revoke old token
-    await prisma.userToken.update({
-      where: { id: storedToken.id },
-      data: { revoked: true },
-    });
-
-    // Issue new refresh token
-    const newRefreshToken = crypto.randomBytes(64).toString("hex");
-    const newRefreshTokenHash = crypto
-      .createHash("sha256")
-      .update(newRefreshToken)
-      .digest("hex");
-
-    await prisma.userToken.create({
-      data: {
-        userId: storedToken.userId,
-        tokenHash: newRefreshTokenHash,
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
-      },
-    });
-
-    // New access token
-    const newAccessToken = jwt.sign(
-      { userId: storedToken.userId },
-      process.env.JWT_SECRET_KEY!,
-      { expiresIn: JWT_ACCESS_TOKEN_TTL }
-    );
-
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
     };
   } catch (error: any) {
     if (error instanceof ApiError) {
@@ -299,8 +230,14 @@ export const logoutUserService = async (refreshToken: string) => {
       throw new ApiError(400, "Refresh token is required");
     }
 
+    // From frontend we get plain text but in db it is stored in hashed format so. we hash it and then check in db
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
     const token = await prisma.adminUserToken.findUnique({
-      where: { tokenHash: refreshToken },
+      where: { tokenHash },
     });
 
     if (token) {
@@ -312,6 +249,78 @@ export const logoutUserService = async (refreshToken: string) => {
     return { message: "Logged out successfully" };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const refreshTokenService = async (refreshToken: string) => {
+  try {
+    if (!refreshToken) {
+      throw new ApiError(401, "Missing refresh token");
+    }
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    const storedToken = await prisma.userToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!storedToken || storedToken.revoked) {
+      if (storedToken?.userId) {
+        // revoke all sessions for safety
+        await prisma.userToken.updateMany({
+          where: { userId: storedToken.userId },
+          data: { revoked: true },
+        });
+      }
+
+      throw new ApiError(401, "Invalid refresh token");
+    }
+
+    // Expired
+    if (storedToken.expiresAt < new Date()) {
+      throw new ApiError(401, "Refresh token expired");
+    }
+
+    // Rotate: revoke old token
+    await prisma.userToken.update({
+      where: { id: storedToken.id },
+      data: { revoked: true },
+    });
+
+    // Issue new refresh token
+    const newRefreshToken = crypto.randomBytes(64).toString("hex");
+    const newRefreshTokenHash = crypto
+      .createHash("sha256")
+      .update(newRefreshToken)
+      .digest("hex");
+
+    await prisma.userToken.create({
+      data: {
+        userId: storedToken.userId,
+        tokenHash: newRefreshTokenHash,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      },
+    });
+
+    // New access token
+    const newAccessToken = jwt.sign(
+      { userId: storedToken.userId },
+      process.env.JWT_SECRET_KEY!,
+      { expiresIn: JWT_ACCESS_TOKEN_TTL }
+    );
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };

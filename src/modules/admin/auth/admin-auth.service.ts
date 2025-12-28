@@ -64,6 +64,11 @@ export const registerAdminService = async (payload: RegisterAdminPayload) => {
         email: true,
         name: true,
         roleId: true,
+        role: {
+          select: {
+            permissions: true,
+          },
+        },
       },
     });
 
@@ -73,6 +78,7 @@ export const registerAdminService = async (payload: RegisterAdminPayload) => {
       { expiresIn: JWT_ACCESS_TOKEN_TTL }
     );
 
+    // Generates a refresh token hash it and store it in db
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashToken(refreshToken);
 
@@ -112,17 +118,20 @@ export const loginAdminService = async (payload: LoginAdminPayload) => {
       throw new ApiError(403, "Admin account is deactivated");
     }
 
+    // validates the passwotd
     const isValid = await bcrypt.compare(password, admin.password);
     if (!isValid) {
       throw new ApiError(401, "Invalid credentials");
     }
 
+    // create access token jwt
     const accessToken = jwt.sign(
       { userId: admin.id, type: "ADMIN" },
       process.env.JWT_SECRET_KEY!,
       { expiresIn: JWT_ACCESS_TOKEN_TTL }
     );
 
+    // Generate refresh token hash it and store it in db
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashToken(refreshToken);
 
@@ -156,8 +165,14 @@ export const logoutAdminService = async (refreshToken: string) => {
       throw new ApiError(400, "Refresh token is required");
     }
 
+    // From frontend we get plain text but in db it is stored in hashed format so. we hash it and then check in db
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
     const token = await prisma.adminUserToken.findUnique({
-      where: { tokenHash: refreshToken },
+      where: { tokenHash },
     });
 
     if (token) {
@@ -206,6 +221,7 @@ export const refreshAdminTokenService = async (refreshToken: string) => {
       throw new ApiError(401, "Missing refresh token");
     }
 
+    // From frontend we get plain text but in db it is stored in hashed format so. we hash it and then check in db
     const tokenHash = crypto
       .createHash("sha256")
       .update(refreshToken)
@@ -215,6 +231,7 @@ export const refreshAdminTokenService = async (refreshToken: string) => {
       where: { tokenHash },
     });
 
+    // if we dont get stored token or the token is revoked the logout all sessions
     if (!storedToken || storedToken.revoked) {
       if (storedToken?.userId) {
         // revoke all sessions for safety
@@ -229,7 +246,6 @@ export const refreshAdminTokenService = async (refreshToken: string) => {
 
     // Expired
     if (storedToken.expiresAt < new Date()) {
-      console.log("EXPRIRED");
       throw new ApiError(401, "Refresh token expired");
     }
 
@@ -269,8 +285,6 @@ export const refreshAdminTokenService = async (refreshToken: string) => {
     if (error instanceof ApiError) {
       throw error;
     }
-
-    console.log({ error });
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };
