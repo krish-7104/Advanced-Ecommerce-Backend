@@ -1714,7 +1714,6 @@ export const ProductScalarFieldEnum = {
   brand: 'brand',
   categoryId: 'categoryId',
   attributesSchema: 'attributesSchema',
-  images: 'images',
   isActive: 'isActive',
   isFeatured: 'isFeatured',
   createdAt: 'createdAt',

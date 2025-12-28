@@ -105,9 +105,8 @@ model Product {
   category   Category @relation(fields: [categoryId], references: [id])
 
   attributesSchema Json?
-  images           String[]
-  isActive         Boolean  @default(true)
-  isFeatured       Boolean  @default(false)
+  isActive         Boolean @default(true)
+  isFeatured       Boolean @default(false)
 
   variants  ProductVariant[]
   createdAt DateTime         @default(now())

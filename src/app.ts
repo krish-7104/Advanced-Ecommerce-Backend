@@ -6,6 +6,7 @@ import cors from "cors";
 import "dotenv/config";
 import userAuthRoutes from "./modules/auth/auth.route.js";
 import categoryRoutes from "./modules/catalog/category/category.route.js";
+import productRoutes from "./modules/catalog/product/product.route.js";
 import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
 import roleRoutes from "./modules/admin/roles/role.route.js";
 
@@ -27,6 +28,7 @@ app.use(
 // User Authentication
 app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/category", categoryRoutes);
+app.use("/api/v1/product", productRoutes);
 
 // Admin
 app.use("/api/v1/admin/auth", adminAuthRoutes);
