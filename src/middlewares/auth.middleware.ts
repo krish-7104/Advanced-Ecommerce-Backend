@@ -22,6 +22,7 @@ export const authMiddleware = (
       token,
       process.env.JWT_SECRET_KEY!
     ) as JwtPayload;
+
     req.user = payload;
 
     return next();

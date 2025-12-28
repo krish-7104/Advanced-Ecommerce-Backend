@@ -272,7 +272,7 @@ export const refreshAdminTokenService = async (refreshToken: string) => {
 
     // New access token
     const newAccessToken = jwt.sign(
-      { userId: storedToken.userId },
+      { userId: storedToken.userId, type: "ADMIN" },
       process.env.JWT_SECRET_KEY!,
       { expiresIn: JWT_ACCESS_TOKEN_TTL }
     );
