@@ -53,10 +53,10 @@ export const createCategorySerice = async (payload: CategoryModel) => {
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };
-export const getCategoryByIdService = async (categoryId: string) => {
+export const getCategoryByIdService = async (id: string) => {
   try {
     const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+      where: { id },
       include: {
         parent: true,
         children: true,
@@ -79,12 +79,12 @@ export const getCategoryByIdService = async (categoryId: string) => {
 };
 
 export const updateCategoryService = async (
-  categoryId: string,
+  id: string,
   payload: CategoryModel
 ) => {
   try {
     const category = await prisma.category.update({
-      where: { id: categoryId },
+      where: { id },
       data: payload,
     });
     return category;
@@ -94,10 +94,10 @@ export const updateCategoryService = async (
   }
 };
 
-export const deleteCategoryService = async (categoryId: string) => {
+export const deleteCategoryService = async (id: string) => {
   try {
     const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+      where: { id },
     });
 
     if (!category) {
@@ -105,7 +105,7 @@ export const deleteCategoryService = async (categoryId: string) => {
     }
 
     const result = await prisma.category.delete({
-      where: { id: categoryId },
+      where: { id },
     });
 
     return result;

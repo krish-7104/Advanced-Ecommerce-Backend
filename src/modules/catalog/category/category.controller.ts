@@ -33,29 +33,29 @@ export const getCategoryByIdController = async (
   req: Request,
   res: Response
 ) => {
-  const { categoryId } = req.params;
-  if (!categoryId) {
+  const { id } = req.params;
+  if (!id) {
     throw new ApiError(400, "Category ID is required!");
   }
-  const category = await getCategoryByIdService(categoryId);
+  const category = await getCategoryByIdService(id);
   res.send(new ApiResponse(200, category, "Category get successfully!"));
 };
 
 export const updateCategoryController = async (req: Request, res: Response) => {
-  const { categoryId } = req.params;
-  if (!categoryId) {
+  const { id } = req.params;
+  if (!id) {
     throw new ApiError(400, "Category ID is required!");
   }
-  const category = await updateCategoryService(categoryId, req.body);
+  const category = await updateCategoryService(id, req.body);
   res.send(new ApiResponse(200, category, "Category updated successfully!"));
 };
 
 export const deleteCategoryController = async (req: Request, res: Response) => {
-  const { categoryId } = req.params;
-  if (!categoryId) {
+  const { id } = req.params;
+  if (!id) {
     throw new ApiError(400, "Category ID is required!");
   }
 
-  const category = await deleteCategoryService(categoryId);
+  const category = await deleteCategoryService(id);
   res.send(new ApiResponse(200, category, "Category deleted successfully!"));
 };

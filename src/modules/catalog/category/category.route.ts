@@ -13,18 +13,8 @@ const router = express.Router();
 
 router.get("/", authMiddleware, getAllCategorieController);
 router.post("/create", authMiddleware, limitToAdmin, createCategoryController);
-router.get("/:categoryId", authMiddleware, getCategoryByIdController);
-router.patch(
-  "/:categoryId",
-  authMiddleware,
-  limitToAdmin,
-  updateCategoryController
-);
-router.delete(
-  "/:categoryId",
-  authMiddleware,
-  limitToAdmin,
-  deleteCategoryController
-);
+router.get("/:id", authMiddleware, getCategoryByIdController);
+router.patch("/:id", authMiddleware, limitToAdmin, updateCategoryController);
+router.delete("/:id", authMiddleware, limitToAdmin, deleteCategoryController);
 
 export default router;
