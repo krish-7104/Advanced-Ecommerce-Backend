@@ -3,7 +3,7 @@ import ApiError from "../../../utils/ApiError";
 import {
   createCategorySerice,
   deleteCategoryService,
-  getAllCategorieService,
+  getAllCategoriesService,
   getCategoryByIdService,
   updateCategoryService,
 } from "./category.service";
@@ -25,7 +25,7 @@ export const getAllCategorieController = async (
   res: Response
 ) => {
   const queryParams = req.query;
-  const categories = await getAllCategorieService(queryParams);
+  const categories = await getAllCategoriesService(queryParams);
   res.send(new ApiResponse(201, categories, "Categories get successfully!"));
 };
 

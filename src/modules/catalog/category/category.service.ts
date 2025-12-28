@@ -53,71 +53,6 @@ export const createCategorySerice = async (payload: CategoryModel) => {
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };
-
-export const getAllCategorieService = async (
-  queryParams: GetAllCategoriesQueryParams
-) => {
-  const {
-    children,
-    childrenCount,
-    level,
-    parent,
-    parentId,
-    productCount,
-    products,
-  } = queryParams;
-
-  try {
-    const include: any = {};
-
-    if (toBool(children)) {
-      include.children = {};
-
-      if (toBool(products)) {
-        include.children.include = {
-          products: true,
-        };
-      }
-    }
-
-    if (toBool(parent)) {
-      include.parent = true;
-    }
-
-    if (toBool(childrenCount) || toBool(productCount)) {
-      include._count = { select: {} };
-
-      if (toBool(childrenCount)) {
-        include._count.select.children = true;
-      }
-
-      if (toBool(productCount)) {
-        include._count.select.products = true;
-      }
-    }
-
-    const where: any = {};
-
-    if (level !== undefined) {
-      where.level = Number(level);
-    }
-
-    if (parentId) {
-      where.parentId = parentId;
-    }
-
-    const category = await prisma.category.findMany({
-      where,
-      ...(Object.keys(include).length ? { include } : {}),
-    });
-
-    return category;
-  } catch (error: any) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError(500, error?.message || "Something Went Wrong");
-  }
-};
-
 export const getCategoryByIdService = async (categoryId: string) => {
   try {
     const category = await prisma.category.findUnique({
@@ -174,6 +109,42 @@ export const deleteCategoryService = async (categoryId: string) => {
     });
 
     return result;
+  } catch (error: any) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const getAllCategoriesService = async (
+  queryParams: GetAllCategoriesQueryParams
+) => {
+  const { type } = queryParams;
+
+  try {
+    const where: any = {};
+
+    if (type === "PARENT") {
+      where.parentId = null;
+    }
+
+    if (type === "CHILD") {
+      where.parentId = { not: null };
+    }
+
+    const category = await prisma.category.findMany({
+      where,
+      include: {
+        parent: true,
+        _count: {
+          select: {
+            children: true,
+            products: true,
+          },
+        },
+      },
+    });
+
+    return category;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
