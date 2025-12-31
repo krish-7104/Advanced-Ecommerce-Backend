@@ -130,8 +130,9 @@ model ProductVariant {
   //   mrp <= price → no discount
   //   mrp > price → discounted product
 
-  stockAvailable Int @default(0)
-  stockSold      Int @default(0)
+  stockAvailable Int     @default(0)
+  stockSold      Int     @default(0)
+  isDefault      Boolean @default(false)
 
   images   String[]
   isActive Boolean  @default(true)

@@ -29,6 +29,7 @@ app.use(
 app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/product", productRoutes);
+app.use("/api/v1/product/variants", productRoutes);
 
 // Admin
 app.use("/api/v1/admin/auth", adminAuthRoutes);
