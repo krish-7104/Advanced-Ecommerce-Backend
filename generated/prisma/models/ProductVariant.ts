@@ -48,6 +48,7 @@ export type ProductVariantMinAggregateOutputType = {
   mrp: runtime.Decimal | null
   stockAvailable: number | null
   stockSold: number | null
+  isDefault: boolean | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +62,7 @@ export type ProductVariantMaxAggregateOutputType = {
   mrp: runtime.Decimal | null
   stockAvailable: number | null
   stockSold: number | null
+  isDefault: boolean | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -75,6 +77,7 @@ export type ProductVariantCountAggregateOutputType = {
   mrp: number
   stockAvailable: number
   stockSold: number
+  isDefault: number
   images: number
   isActive: number
   createdAt: number
@@ -105,6 +108,7 @@ export type ProductVariantMinAggregateInputType = {
   mrp?: true
   stockAvailable?: true
   stockSold?: true
+  isDefault?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -118,6 +122,7 @@ export type ProductVariantMaxAggregateInputType = {
   mrp?: true
   stockAvailable?: true
   stockSold?: true
+  isDefault?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -132,6 +137,7 @@ export type ProductVariantCountAggregateInputType = {
   mrp?: true
   stockAvailable?: true
   stockSold?: true
+  isDefault?: true
   images?: true
   isActive?: true
   createdAt?: true
@@ -234,6 +240,7 @@ export type ProductVariantGroupByOutputType = {
   mrp: runtime.Decimal | null
   stockAvailable: number
   stockSold: number
+  isDefault: boolean
   images: string[]
   isActive: boolean
   createdAt: Date
@@ -272,6 +279,7 @@ export type ProductVariantWhereInput = {
   mrp?: Prisma.DecimalNullableFilter<"ProductVariant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFilter<"ProductVariant"> | number
   stockSold?: Prisma.IntFilter<"ProductVariant"> | number
+  isDefault?: Prisma.BoolFilter<"ProductVariant"> | boolean
   images?: Prisma.StringNullableListFilter<"ProductVariant">
   isActive?: Prisma.BoolFilter<"ProductVariant"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ProductVariant"> | Date | string
@@ -290,6 +298,7 @@ export type ProductVariantOrderByWithRelationInput = {
   mrp?: Prisma.SortOrderInput | Prisma.SortOrder
   stockAvailable?: Prisma.SortOrder
   stockSold?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   images?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -311,6 +320,7 @@ export type ProductVariantWhereUniqueInput = Prisma.AtLeast<{
   mrp?: Prisma.DecimalNullableFilter<"ProductVariant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFilter<"ProductVariant"> | number
   stockSold?: Prisma.IntFilter<"ProductVariant"> | number
+  isDefault?: Prisma.BoolFilter<"ProductVariant"> | boolean
   images?: Prisma.StringNullableListFilter<"ProductVariant">
   isActive?: Prisma.BoolFilter<"ProductVariant"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ProductVariant"> | Date | string
@@ -329,6 +339,7 @@ export type ProductVariantOrderByWithAggregationInput = {
   mrp?: Prisma.SortOrderInput | Prisma.SortOrder
   stockAvailable?: Prisma.SortOrder
   stockSold?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   images?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -352,6 +363,7 @@ export type ProductVariantScalarWhereWithAggregatesInput = {
   mrp?: Prisma.DecimalNullableWithAggregatesFilter<"ProductVariant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntWithAggregatesFilter<"ProductVariant"> | number
   stockSold?: Prisma.IntWithAggregatesFilter<"ProductVariant"> | number
+  isDefault?: Prisma.BoolWithAggregatesFilter<"ProductVariant"> | boolean
   images?: Prisma.StringNullableListFilter<"ProductVariant">
   isActive?: Prisma.BoolWithAggregatesFilter<"ProductVariant"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductVariant"> | Date | string
@@ -366,6 +378,7 @@ export type ProductVariantCreateInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -384,6 +397,7 @@ export type ProductVariantUncheckedCreateInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -400,6 +414,7 @@ export type ProductVariantUpdateInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -418,6 +433,7 @@ export type ProductVariantUncheckedUpdateInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -435,6 +451,7 @@ export type ProductVariantCreateManyInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -449,6 +466,7 @@ export type ProductVariantUpdateManyMutationInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -464,6 +482,7 @@ export type ProductVariantUncheckedUpdateManyInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -497,6 +516,7 @@ export type ProductVariantCountOrderByAggregateInput = {
   mrp?: Prisma.SortOrder
   stockAvailable?: Prisma.SortOrder
   stockSold?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   images?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -518,6 +538,7 @@ export type ProductVariantMaxOrderByAggregateInput = {
   mrp?: Prisma.SortOrder
   stockAvailable?: Prisma.SortOrder
   stockSold?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -531,6 +552,7 @@ export type ProductVariantMinOrderByAggregateInput = {
   mrp?: Prisma.SortOrder
   stockAvailable?: Prisma.SortOrder
   stockSold?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -651,6 +673,7 @@ export type ProductVariantCreateWithoutProductInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -667,6 +690,7 @@ export type ProductVariantUncheckedCreateWithoutProductInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -713,6 +737,7 @@ export type ProductVariantScalarWhereInput = {
   mrp?: Prisma.DecimalNullableFilter<"ProductVariant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFilter<"ProductVariant"> | number
   stockSold?: Prisma.IntFilter<"ProductVariant"> | number
+  isDefault?: Prisma.BoolFilter<"ProductVariant"> | boolean
   images?: Prisma.StringNullableListFilter<"ProductVariant">
   isActive?: Prisma.BoolFilter<"ProductVariant"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ProductVariant"> | Date | string
@@ -727,6 +752,7 @@ export type ProductVariantCreateWithoutCartItemsInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -744,6 +770,7 @@ export type ProductVariantUncheckedCreateWithoutCartItemsInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -775,6 +802,7 @@ export type ProductVariantUpdateWithoutCartItemsInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -792,6 +820,7 @@ export type ProductVariantUncheckedUpdateWithoutCartItemsInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -807,6 +836,7 @@ export type ProductVariantCreateWithoutOrderItemsInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -824,6 +854,7 @@ export type ProductVariantUncheckedCreateWithoutOrderItemsInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -855,6 +886,7 @@ export type ProductVariantUpdateWithoutOrderItemsInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -872,6 +904,7 @@ export type ProductVariantUncheckedUpdateWithoutOrderItemsInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -887,6 +920,7 @@ export type ProductVariantCreateManyProductInput = {
   mrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: number
   stockSold?: number
+  isDefault?: boolean
   images?: Prisma.ProductVariantCreateimagesInput | string[]
   isActive?: boolean
   createdAt?: Date | string
@@ -901,6 +935,7 @@ export type ProductVariantUpdateWithoutProductInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -917,6 +952,7 @@ export type ProductVariantUncheckedUpdateWithoutProductInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -933,6 +969,7 @@ export type ProductVariantUncheckedUpdateManyWithoutProductInput = {
   mrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   stockAvailable?: Prisma.IntFieldUpdateOperationsInput | number
   stockSold?: Prisma.IntFieldUpdateOperationsInput | number
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.ProductVariantUpdateimagesInput | string[]
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -988,6 +1025,7 @@ export type ProductVariantSelect<ExtArgs extends runtime.Types.Extensions.Intern
   mrp?: boolean
   stockAvailable?: boolean
   stockSold?: boolean
+  isDefault?: boolean
   images?: boolean
   isActive?: boolean
   createdAt?: boolean
@@ -1007,6 +1045,7 @@ export type ProductVariantSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   mrp?: boolean
   stockAvailable?: boolean
   stockSold?: boolean
+  isDefault?: boolean
   images?: boolean
   isActive?: boolean
   createdAt?: boolean
@@ -1023,6 +1062,7 @@ export type ProductVariantSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   mrp?: boolean
   stockAvailable?: boolean
   stockSold?: boolean
+  isDefault?: boolean
   images?: boolean
   isActive?: boolean
   createdAt?: boolean
@@ -1039,13 +1079,14 @@ export type ProductVariantSelectScalar = {
   mrp?: boolean
   stockAvailable?: boolean
   stockSold?: boolean
+  isDefault?: boolean
   images?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductVariantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "sku" | "attributes" | "price" | "mrp" | "stockAvailable" | "stockSold" | "images" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["productVariant"]>
+export type ProductVariantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "sku" | "attributes" | "price" | "mrp" | "stockAvailable" | "stockSold" | "isDefault" | "images" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["productVariant"]>
 export type ProductVariantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   cartItems?: boolean | Prisma.ProductVariant$cartItemsArgs<ExtArgs>
@@ -1075,6 +1116,7 @@ export type $ProductVariantPayload<ExtArgs extends runtime.Types.Extensions.Inte
     mrp: runtime.Decimal | null
     stockAvailable: number
     stockSold: number
+    isDefault: boolean
     images: string[]
     isActive: boolean
     createdAt: Date
@@ -1513,6 +1555,7 @@ export interface ProductVariantFieldRefs {
   readonly mrp: Prisma.FieldRef<"ProductVariant", 'Decimal'>
   readonly stockAvailable: Prisma.FieldRef<"ProductVariant", 'Int'>
   readonly stockSold: Prisma.FieldRef<"ProductVariant", 'Int'>
+  readonly isDefault: Prisma.FieldRef<"ProductVariant", 'Boolean'>
   readonly images: Prisma.FieldRef<"ProductVariant", 'String[]'>
   readonly isActive: Prisma.FieldRef<"ProductVariant", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ProductVariant", 'DateTime'>

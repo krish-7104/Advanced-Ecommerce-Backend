@@ -29,7 +29,7 @@ export const createProductController = async (req: Request, res: Response) => {
 export const getAllProductsController = async (req: Request, res: Response) => {
   const queryParams = req.query;
   const categories = await getAllProductsService(queryParams);
-  res.send(new ApiResponse(201, categories, "Categories get successfully!"));
+  res.send(new ApiResponse(201, categories, "Products get successfully!"));
 };
 
 export const getProductByIdController = async (req: Request, res: Response) => {

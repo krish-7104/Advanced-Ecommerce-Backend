@@ -1,41 +1,52 @@
 import { Request, Response } from "express";
 import ApiError from "../../../utils/ApiError";
 import {
-  createProductVariantSerice,
-  deleteProductVariantService,
+  createProductVariantService,
   getAllProductVariantsService,
-  updateProductVariantService,
+  getProductVariantByIdService,
+  // deleteProductVariantService,
+  // updateProductVariantService,
 } from "./product-variant.service";
 import ApiResponse from "../../../utils/ApiResponse";
-import { getProductByIdService } from "../product/product.service";
 
 export const createProductVariantController = async (
   req: Request,
   res: Response
 ) => {
-  const { name, attributesSchema, categoryId } = req.body;
-  if (!name) {
-    throw new ApiError(400, "name is required!");
-  }
-  if (!attributesSchema) {
-    throw new ApiError(400, "attributesSchema is required!");
-  }
-  if (!categoryId) {
-    throw new ApiError(400, "categoryId is required!");
+  const { productId } = req.params;
+  const { sku, attributes, price, stockAvailable, images } = req.body;
+
+  const errors: string[] = [];
+
+  if (!productId) errors.push("productId");
+  if (!sku) errors.push("sku");
+  if (Object.keys(attributes).length == 0) errors.push("attributes");
+  if (price == null) errors.push("price");
+  if (stockAvailable == null) errors.push("stockAvailable");
+  if (!Array.isArray(images) || images.length === 0) {
+    errors.push("at least one image");
   }
 
-  const Product = await createProductVariantSerice(req.body);
+  if (errors.length) {
+    throw new ApiError(400, errors.join(", ") + " is required");
+  }
 
-  res.send(new ApiResponse(201, Product, "Product created successfully!"));
+  const variant = await createProductVariantService(req.body, productId);
+
+  res
+    .status(201)
+    .json(new ApiResponse(201, variant, "Variant created successfully"));
 };
 
 export const getAllProductVariantsController = async (
   req: Request,
   res: Response
 ) => {
-  const queryParams = req.query;
-  const categories = await getAllProductVariantsService();
-  res.send(new ApiResponse(201, categories, "Categories get successfully!"));
+  const { productId } = req.params;
+  const productVariants = await getAllProductVariantsService(productId);
+  res.send(
+    new ApiResponse(201, productVariants, "Product Variants get successfully!")
+  );
 };
 
 export const getProductVariantByIdController = async (
@@ -44,33 +55,33 @@ export const getProductVariantByIdController = async (
 ) => {
   const { id } = req.params;
   if (!id) {
-    throw new ApiError(400, "Product ID is required!");
+    throw new ApiError(400, "Variant Id is required!");
   }
-  const Product = await getProductByIdService(id);
+  const Product = await getProductVariantByIdService(id);
   res.send(new ApiResponse(200, Product, "Product get successfully!"));
 };
 
-export const updateProductVariantController = async (
-  req: Request,
-  res: Response
-) => {
-  const { id } = req.params;
-  if (!id) {
-    throw new ApiError(400, "Product ID is required!");
-  }
-  const Product = await updateProductVariantService(id, req.body);
-  res.send(new ApiResponse(200, Product, "Product updated successfully!"));
-};
+// export const updateProductVariantController = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   const { id } = req.params;
+//   if (!id) {
+//     throw new ApiError(400, "Product ID is required!");
+//   }
+//   const Product = await updateProductVariantService(id, req.body);
+//   res.send(new ApiResponse(200, Product, "Product updated successfully!"));
+// };
 
-export const deleteProductVariantController = async (
-  req: Request,
-  res: Response
-) => {
-  const { id } = req.params;
-  if (!id) {
-    throw new ApiError(400, "Product ID is required!");
-  }
+// export const deleteProductVariantController = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   const { id } = req.params;
+//   if (!id) {
+//     throw new ApiError(400, "Product ID is required!");
+//   }
 
-  const Product = await deleteProductVariantService(id);
-  res.send(new ApiResponse(200, Product, "Product deleted successfully!"));
-};
+//   const Product = await deleteProductVariantService(id);
+//   res.send(new ApiResponse(200, Product, "Product deleted successfully!"));
+// };

@@ -175,6 +175,7 @@ export const ProductVariantScalarFieldEnum = {
   mrp: 'mrp',
   stockAvailable: 'stockAvailable',
   stockSold: 'stockSold',
+  isDefault: 'isDefault',
   images: 'images',
   isActive: 'isActive',
   createdAt: 'createdAt',

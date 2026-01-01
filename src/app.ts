@@ -7,6 +7,7 @@ import "dotenv/config";
 import userAuthRoutes from "./modules/auth/auth.route.js";
 import categoryRoutes from "./modules/catalog/category/category.route.js";
 import productRoutes from "./modules/catalog/product/product.route.js";
+import productVariantRoutes from "./modules/catalog/product-variant/product-variant.route.js";
 import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
 import roleRoutes from "./modules/admin/roles/role.route.js";
 
@@ -29,7 +30,7 @@ app.use(
 app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/product", productRoutes);
-app.use("/api/v1/product/variants", productRoutes);
+app.use("/api/v1/product/variants", productVariantRoutes);
 
 // Admin
 app.use("/api/v1/admin/auth", adminAuthRoutes);
