@@ -1,6 +1,8 @@
+import { AssetOwner } from "../../../../generated/prisma/enums";
 import { ProductModel } from "../../../../generated/prisma/models";
 import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
+import { addAssetToPayload } from "../../../utils/upload-handlers/add-asset-to-payload";
 import { GetAllProductsQueryParams } from "./product.types";
 
 export const createProductSerice = async (payload: ProductModel) => {
@@ -12,7 +14,6 @@ export const createProductSerice = async (payload: ProductModel) => {
       attributesSchema,
       brand,
       categoryId,
-      isActive,
       isFeatured,
     } = payload;
 
@@ -42,7 +43,6 @@ export const createProductSerice = async (payload: ProductModel) => {
         attributesSchema: attributesSchema || {},
         brand,
         categoryId,
-        isActive,
         isFeatured,
       },
     });
@@ -83,6 +83,20 @@ export const updateProductService = async (
   payload: ProductModel
 ) => {
   try {
+    if (payload.isActive === true) {
+      const variants = await prisma.productVariant.findMany({
+        where: {
+          productId: id,
+        },
+      });
+      if (variants.length === 0) {
+        throw new ApiError(
+          400,
+          "Product must have at least one variant to be active"
+        );
+      }
+    }
+
     const Product = await prisma.product.update({
       where: { id },
       data: { ...payload, attributesSchema: payload.attributesSchema || {} },
@@ -102,6 +116,15 @@ export const deleteProductService = async (id: string) => {
 
     if (!Product) {
       throw new ApiError(404, "Product not found!");
+    }
+
+    const variants = await prisma.productVariant.findMany({
+      where: {
+        productId: id,
+      },
+    });
+    if (variants.length > 0) {
+      throw new ApiError(400, "Product has variants, cannot be deleted");
     }
 
     const result = await prisma.product.delete({
@@ -151,11 +174,31 @@ export const getAllProductsService = async (
             parent: true,
           },
         },
-        variants: true,
+        variants: {
+          where: {
+            isActive: true,
+            isDefault: true,
+          },
+        },
       },
     });
 
-    return Product;
+    const payload = await Promise.all(
+      Product.map((product: any) =>
+        addAssetToPayload(
+          product.variants[0]?.id || "",
+          AssetOwner.PRODUCT_IMAGE,
+          true
+        )
+      )
+    );
+
+    console.log(JSON.stringify(payload, null, 2));
+
+    return Product.map((product: any, index: number) => ({
+      ...product,
+      ...payload[index],
+    }));
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");

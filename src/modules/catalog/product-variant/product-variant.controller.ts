@@ -2,8 +2,10 @@ import { Request, Response } from "express";
 import ApiError from "../../../utils/ApiError";
 import {
   createProductVariantService,
+  deleteProductVariantService,
   getAllProductVariantsService,
   getProductVariantByIdService,
+  updateProductVariantService,
   // deleteProductVariantService,
   // updateProductVariantService,
 } from "./product-variant.service";
@@ -14,7 +16,10 @@ export const createProductVariantController = async (
   res: Response
 ) => {
   const { productId } = req.params;
-  const { sku, attributes, price, stockAvailable, images } = req.body;
+  let { sku, attributes, price, stockAvailable, mrp, isActive, isDefault } =
+    req.body;
+
+  const images = (req.files as any)?.images;
 
   const errors: string[] = [];
 
@@ -31,7 +36,11 @@ export const createProductVariantController = async (
     throw new ApiError(400, errors.join(", ") + " is required");
   }
 
-  const variant = await createProductVariantService(req.body, productId);
+  const variant = await createProductVariantService(
+    req.body,
+    productId,
+    images
+  );
 
   res
     .status(201)
@@ -61,27 +70,39 @@ export const getProductVariantByIdController = async (
   res.send(new ApiResponse(200, Product, "Product get successfully!"));
 };
 
-// export const updateProductVariantController = async (
-//   req: Request,
-//   res: Response
-// ) => {
-//   const { id } = req.params;
-//   if (!id) {
-//     throw new ApiError(400, "Product ID is required!");
-//   }
-//   const Product = await updateProductVariantService(id, req.body);
-//   res.send(new ApiResponse(200, Product, "Product updated successfully!"));
-// };
+export const updateProductVariantController = async (
+  req: Request,
+  res: Response
+) => {
+  const { id } = req.params;
 
-// export const deleteProductVariantController = async (
-//   req: Request,
-//   res: Response
-// ) => {
-//   const { id } = req.params;
-//   if (!id) {
-//     throw new ApiError(400, "Product ID is required!");
-//   }
+  if (!id) {
+    throw new ApiError(400, "Product Variant ID is required");
+  }
 
-//   const Product = await deleteProductVariantService(id);
-//   res.send(new ApiResponse(200, Product, "Product deleted successfully!"));
-// };
+  const images = (req.files as any)?.images;
+
+  const updatedVariant = await updateProductVariantService(
+    id,
+    req.body,
+    images
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, updatedVariant, "Variant updated successfully"));
+};
+
+export const deleteProductVariantController = async (
+  req: Request,
+  res: Response
+) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new ApiError(400, "Product Variant ID is required");
+  }
+
+  await deleteProductVariantService(id);
+  res.send(new ApiResponse(200, [], "Variant deleted successfully"));
+};

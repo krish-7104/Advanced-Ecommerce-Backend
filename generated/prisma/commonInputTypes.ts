@@ -399,6 +399,23 @@ export type EnumAuditActionWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAuditActionFilter<$PrismaModel>
 }
 
+export type EnumAssetOwnerFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssetOwner | Prisma.EnumAssetOwnerFieldRefInput<$PrismaModel>
+  in?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssetOwnerFilter<$PrismaModel> | $Enums.AssetOwner
+}
+
+export type EnumAssetOwnerWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssetOwner | Prisma.EnumAssetOwnerFieldRefInput<$PrismaModel>
+  in?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssetOwnerWithAggregatesFilter<$PrismaModel> | $Enums.AssetOwner
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssetOwnerFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssetOwnerFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -741,6 +758,23 @@ export type NestedEnumAuditActionWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAuditActionFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAuditActionFilter<$PrismaModel>
+}
+
+export type NestedEnumAssetOwnerFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssetOwner | Prisma.EnumAssetOwnerFieldRefInput<$PrismaModel>
+  in?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssetOwnerFilter<$PrismaModel> | $Enums.AssetOwner
+}
+
+export type NestedEnumAssetOwnerWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssetOwner | Prisma.EnumAssetOwnerFieldRefInput<$PrismaModel>
+  in?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssetOwner[] | Prisma.ListEnumAssetOwnerFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssetOwnerWithAggregatesFilter<$PrismaModel> | $Enums.AssetOwner
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssetOwnerFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssetOwnerFilter<$PrismaModel>
 }
 
 

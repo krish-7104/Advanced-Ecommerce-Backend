@@ -97,3 +97,8 @@ export type RolePermission = Prisma.RolePermissionModel
  * 
  */
 export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
+ * Model Asset
+ * 
+ */
+export type Asset = Prisma.AssetModel

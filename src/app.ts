@@ -10,6 +10,7 @@ import productRoutes from "./modules/catalog/product/product.route.js";
 import productVariantRoutes from "./modules/catalog/product-variant/product-variant.route.js";
 import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
 import roleRoutes from "./modules/admin/roles/role.route.js";
+import path from "path";
 
 const app = express();
 app.use(express.json());
@@ -18,6 +19,8 @@ app.use(cookieParser());
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+
+app.use("/media", express.static(path.join(process.cwd(), "media")));
 
 app.use(
   cors({

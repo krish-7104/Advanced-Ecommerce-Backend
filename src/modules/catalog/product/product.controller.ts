@@ -8,6 +8,7 @@ import {
   updateProductService,
 } from "./product.service";
 import ApiResponse from "../../../utils/ApiResponse";
+import { GetAllProductsQueryParams } from "./product.types";
 
 export const createProductController = async (req: Request, res: Response) => {
   const { name, attributesSchema, categoryId } = req.body;
@@ -28,8 +29,10 @@ export const createProductController = async (req: Request, res: Response) => {
 
 export const getAllProductsController = async (req: Request, res: Response) => {
   const queryParams = req.query;
-  const categories = await getAllProductsService(queryParams);
-  res.send(new ApiResponse(201, categories, "Products get successfully!"));
+  const products = await getAllProductsService(
+    queryParams as any as GetAllProductsQueryParams
+  );
+  res.send(new ApiResponse(201, products, "Products get successfully!"));
 };
 
 export const getProductByIdController = async (req: Request, res: Response) => {

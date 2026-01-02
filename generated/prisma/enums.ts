@@ -48,3 +48,10 @@ export const AuditAction = {
 } as const
 
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
+
+
+export const AssetOwner = {
+  PRODUCT_IMAGE: 'PRODUCT_IMAGE'
+} as const
+
+export type AssetOwner = (typeof AssetOwner)[keyof typeof AssetOwner]

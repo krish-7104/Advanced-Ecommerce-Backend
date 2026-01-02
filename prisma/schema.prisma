@@ -105,7 +105,7 @@ model Product {
   category   Category @relation(fields: [categoryId], references: [id])
 
   attributesSchema Json?
-  isActive         Boolean @default(true)
+  isActive         Boolean @default(false)
   isFeatured       Boolean @default(false)
 
   variants  ProductVariant[]
@@ -134,8 +134,7 @@ model ProductVariant {
   stockSold      Int     @default(0)
   isDefault      Boolean @default(false)
 
-  images   String[]
-  isActive Boolean  @default(true)
+  isActive Boolean @default(true)
 
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
@@ -319,4 +318,25 @@ enum AuditAction {
   CREATE
   UPDATE
   DELETE
+}
+
+model Asset {
+  id       String @id @default(cuid())
+  fileName String @unique
+  path     String
+  mimeType String
+  size     Int
+  order    Int    @default(0)
+
+  ownerId    String
+  assetOwner AssetOwner
+  isPrimary  Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([fileName])
+}
+
+enum AssetOwner {
+  PRODUCT_IMAGE
 }

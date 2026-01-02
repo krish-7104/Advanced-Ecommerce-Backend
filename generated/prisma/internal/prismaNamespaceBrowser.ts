@@ -66,7 +66,8 @@ export const ModelName = {
   Role: 'Role',
   Permission: 'Permission',
   RolePermission: 'RolePermission',
-  AdminAuditLog: 'AdminAuditLog'
+  AdminAuditLog: 'AdminAuditLog',
+  Asset: 'Asset'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -176,7 +177,6 @@ export const ProductVariantScalarFieldEnum = {
   stockAvailable: 'stockAvailable',
   stockSold: 'stockSold',
   isDefault: 'isDefault',
-  images: 'images',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -305,6 +305,23 @@ export const AdminAuditLogScalarFieldEnum = {
 } as const
 
 export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+export const AssetScalarFieldEnum = {
+  id: 'id',
+  fileName: 'fileName',
+  path: 'path',
+  mimeType: 'mimeType',
+  size: 'size',
+  order: 'order',
+  ownerId: 'ownerId',
+  assetOwner: 'assetOwner',
+  isPrimary: 'isPrimary',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
 
 
 export const SortOrder = {
