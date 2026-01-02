@@ -5,7 +5,8 @@ import { prisma } from "../prisma";
 export const uploadFileHandler = async (
   file: Express.Multer.File,
   ownerId: string,
-  ownerType: AssetOwner
+  ownerType: AssetOwner,
+  imageSequence: number
 ) => {
   const { filename, path, mimetype, size } = file;
   const asset = await prisma.asset.create({
@@ -16,6 +17,7 @@ export const uploadFileHandler = async (
       size: size,
       ownerId,
       assetOwner: ownerType,
+      order: imageSequence,
     },
   });
   return asset;

@@ -8,7 +8,8 @@ import { addAssetToPayload } from "../../../utils/upload-handlers/add-asset-to-p
 export const createProductVariantService = async (
   payload: ProductVariantModel,
   productId: string,
-  images: Express.Multer.File[]
+  images: Express.Multer.File[],
+  imageSequence: number[]
 ) => {
   try {
     const { sku, mrp, attributes, isActive, price, stockAvailable, isDefault } =
@@ -53,8 +54,13 @@ export const createProductVariantService = async (
     });
 
     await Promise.all(
-      images?.map((image: any) =>
-        uploadFileHandler(image, Product.id, AssetOwner.PRODUCT_IMAGE)
+      images?.map((image: any, index: number) =>
+        uploadFileHandler(
+          image,
+          Product.id,
+          AssetOwner.PRODUCT_IMAGE,
+          imageSequence[index]
+        )
       )
     );
     return Product;
@@ -145,7 +151,8 @@ export const getProductVariantByIdService = async (id: string) => {
 export const updateProductVariantService = async (
   id: string,
   payload: Partial<ProductVariantModel>,
-  images?: Express.Multer.File[]
+  images: Express.Multer.File[],
+  imageSequence?: number[]
 ) => {
   try {
     const variant = await prisma.productVariant.findUnique({
@@ -199,8 +206,13 @@ export const updateProductVariantService = async (
     // Upload new images if provided
     if (Array.isArray(images) && images.length > 0) {
       await Promise.all(
-        images.map((image) =>
-          uploadFileHandler(image, id, AssetOwner.PRODUCT_IMAGE)
+        images.map((image: any, index: number) =>
+          uploadFileHandler(
+            image,
+            id,
+            AssetOwner.PRODUCT_IMAGE,
+            imageSequence?.[index] || 0
+          )
         )
       );
     }

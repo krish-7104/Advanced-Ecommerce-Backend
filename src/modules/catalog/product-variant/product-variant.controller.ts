@@ -16,10 +16,11 @@ export const createProductVariantController = async (
   res: Response
 ) => {
   const { productId } = req.params;
-  let { sku, attributes, price, stockAvailable, mrp, isActive, isDefault } =
-    req.body;
+  let { sku, attributes, price, stockAvailable, imageSequence = [] } = req.body;
 
   const images = (req.files as any)?.images;
+
+  imageSequence = imageSequence ? JSON.parse(imageSequence) : [];
 
   const errors: string[] = [];
 
@@ -39,7 +40,8 @@ export const createProductVariantController = async (
   const variant = await createProductVariantService(
     req.body,
     productId,
-    images
+    images,
+    imageSequence
   );
 
   res
@@ -75,7 +77,7 @@ export const updateProductVariantController = async (
   res: Response
 ) => {
   const { id } = req.params;
-
+  let { imageSequence } = req.body;
   if (!id) {
     throw new ApiError(400, "Product Variant ID is required");
   }
@@ -85,7 +87,8 @@ export const updateProductVariantController = async (
   const updatedVariant = await updateProductVariantService(
     id,
     req.body,
-    images
+    images,
+    imageSequence ? JSON.parse(imageSequence) : []
   );
 
   res
