@@ -77,19 +77,44 @@ export const updateProductVariantController = async (
   res: Response
 ) => {
   const { id } = req.params;
-  let { imageSequence } = req.body;
+
   if (!id) {
     throw new ApiError(400, "Product Variant ID is required");
   }
 
-  const images = (req.files as any)?.images;
+  const images = (req.files as any)?.images || [];
 
-  const updatedVariant = await updateProductVariantService(
-    id,
-    req.body,
-    images,
-    imageSequence ? JSON.parse(imageSequence) : []
-  );
+  const { deleteImageIds, reorderImages, newImageOrder, ...variantPayload } =
+    req.body;
+
+  let parsedDeleteImageIds: string[] = [];
+  let parsedReorderImages: { id: string; order: number }[] = [];
+  let parsedNewImageOrder: number[] = [];
+
+  try {
+    if (deleteImageIds) {
+      parsedDeleteImageIds = JSON.parse(deleteImageIds);
+    }
+
+    if (reorderImages) {
+      parsedReorderImages = JSON.parse(reorderImages);
+    }
+
+    if (newImageOrder) {
+      parsedNewImageOrder = JSON.parse(newImageOrder);
+    }
+  } catch {
+    throw new ApiError(400, "Invalid JSON in image operations payload");
+  }
+
+  const updatedVariant = await updateProductVariantService({
+    variantId: id,
+    variantPayload,
+    newImages: images,
+    deleteImageIds: parsedDeleteImageIds,
+    reorderImages: parsedReorderImages,
+    newImageOrder: parsedNewImageOrder,
+  });
 
   res
     .status(200)

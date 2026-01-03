@@ -193,8 +193,6 @@ export const getAllProductsService = async (
       )
     );
 
-    console.log(JSON.stringify(payload, null, 2));
-
     return Product.map((product: any, index: number) => ({
       ...product,
       ...payload[index],
