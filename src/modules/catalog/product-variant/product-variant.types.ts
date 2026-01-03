@@ -7,5 +7,6 @@ export interface UpdateVariantInputTypes {
   deleteImageIds: string[];
   reorderImages: { id: string; order: number }[];
   newImageOrder: number[];
-  primaryImageId?: string;
+  coverImageIndex: number;
+  coverImageId?: string;
 }

@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.get("/all/:productId", authMiddleware, getAllProductVariantsController);
 router.post(
-  "/:productId",
+  "/",
   authMiddleware,
   limitToAdmin,
   upload("product-variant").fields([{ name: "images", maxCount: 10 }]), // max 10 images

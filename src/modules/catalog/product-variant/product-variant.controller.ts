@@ -6,8 +6,6 @@ import {
   getAllProductVariantsService,
   getProductVariantByIdService,
   updateProductVariantService,
-  // deleteProductVariantService,
-  // updateProductVariantService,
 } from "./product-variant.service";
 import ApiResponse from "../../../utils/ApiResponse";
 
@@ -15,12 +13,10 @@ export const createProductVariantController = async (
   req: Request,
   res: Response
 ) => {
-  const { productId } = req.params;
-  let { sku, attributes, price, stockAvailable, imageSequence = [] } = req.body;
+  let { sku, attributes, price, stockAvailable, coverImageIndex, productId } =
+    req.body;
 
   const images = (req.files as any)?.images;
-
-  imageSequence = imageSequence ? JSON.parse(imageSequence) : [];
 
   const errors: string[] = [];
 
@@ -32,6 +28,7 @@ export const createProductVariantController = async (
   if (!Array.isArray(images) || images.length === 0) {
     errors.push("at least one image");
   }
+  coverImageIndex = Number(coverImageIndex) || 0;
 
   if (errors.length) {
     throw new ApiError(400, errors.join(", ") + " is required");
@@ -41,7 +38,7 @@ export const createProductVariantController = async (
     req.body,
     productId,
     images,
-    imageSequence
+    coverImageIndex
   );
 
   res
@@ -84,8 +81,14 @@ export const updateProductVariantController = async (
 
   const images = (req.files as any)?.images || [];
 
-  const { deleteImageIds, reorderImages, newImageOrder, ...variantPayload } =
-    req.body;
+  const {
+    deleteImageIds,
+    reorderImages,
+    newImageOrder,
+    coverImageIndex,
+    coverImageId,
+    ...variantPayload
+  } = req.body;
 
   let parsedDeleteImageIds: string[] = [];
   let parsedReorderImages: { id: string; order: number }[] = [];
@@ -114,6 +117,8 @@ export const updateProductVariantController = async (
     deleteImageIds: parsedDeleteImageIds,
     reorderImages: parsedReorderImages,
     newImageOrder: parsedNewImageOrder,
+    coverImageIndex,
+    coverImageId,
   });
 
   res

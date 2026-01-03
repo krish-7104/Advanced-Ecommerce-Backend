@@ -11,7 +11,7 @@ export const createProductVariantService = async (
   payload: ProductVariantModel,
   productId: string,
   images: Express.Multer.File[],
-  imageSequence: number[]
+  coverImageIndex: number
 ) => {
   try {
     const { sku, mrp, attributes, isActive, price, stockAvailable, isDefault } =
@@ -56,15 +56,17 @@ export const createProductVariantService = async (
     });
 
     await Promise.all(
-      images?.map((image: any, index: number) =>
+      images.map((image: any, index: number) =>
         uploadFileHandler(
           image,
           Product.id,
           AssetOwner.PRODUCT_IMAGE,
-          imageSequence[index]
+          index,
+          index === coverImageIndex ? true : false
         )
       )
     );
+
     return Product;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
@@ -157,133 +159,159 @@ export const updateProductVariantService = async ({
   deleteImageIds,
   reorderImages,
   newImageOrder,
-  primaryImageId,
+  coverImageIndex,
+  coverImageId,
 }: UpdateVariantInputTypes) => {
-  const variant = await prisma.productVariant.findUnique({
-    where: { id: variantId },
-  });
-
-  if (!variant) {
-    throw new ApiError(404, "Product Variant not found");
-  }
-
-  if (variantPayload.sku && variantPayload.sku !== variant.sku) {
-    const exists = await prisma.productVariant.findFirst({
-      where: {
-        sku: variantPayload.sku,
-        NOT: { id: variantId },
-      },
+  return prisma.$transaction(async (tx) => {
+    const variant = await tx.productVariant.findUnique({
+      where: { id: variantId },
     });
 
-    if (exists) throw new ApiError(400, "SKU already exists");
-  }
-
-  if (variantPayload.isDefault === true) {
-    await prisma.productVariant.updateMany({
-      where: {
-        productId: variant.productId,
-        isDefault: true,
-      },
-      data: { isDefault: false },
-    });
-  }
-
-  const updatedVariant = await prisma.productVariant.update({
-    where: { id: variantId },
-    data: {
-      sku: variantPayload.sku,
-      price: variantPayload.price,
-      mrp: variantPayload.mrp ?? null,
-      stockAvailable: variantPayload.stockAvailable,
-      isActive: variantPayload.isActive,
-      isDefault: variantPayload.isDefault,
-      attributes: variantPayload.attributes ?? undefined,
-    },
-  });
-
-  if (deleteImageIds && deleteImageIds.length > 0) {
-    const assets = await prisma.asset.findMany({
-      where: {
-        id: { in: deleteImageIds },
-        ownerId: variantId,
-        assetOwner: AssetOwner.PRODUCT_IMAGE,
-      },
-    });
-
-    await Promise.all(
-      assets.map(async (asset) => {
-        if (fs.existsSync(asset.path)) {
-          fs.unlinkSync(asset.path);
-        }
-        await prisma.asset.delete({ where: { id: asset.id } });
-      })
-    );
-  }
-
-  if (reorderImages && reorderImages.length > 0) {
-    await Promise.all(
-      reorderImages.map((img) =>
-        prisma.asset.update({
-          where: { id: img.id },
-          data: { order: img.order },
-        })
-      )
-    );
-  }
-
-  if (newImages && newImages.length > 0) {
-    await Promise.all(
-      newImages.map((image: any, index: number) =>
-        uploadFileHandler(
-          image,
-          variantId,
-          AssetOwner.PRODUCT_IMAGE,
-          newImageOrder?.[index] ?? 0
-        )
-      )
-    );
-  }
-
-  if (primaryImageId) {
-    const asset = await prisma.asset.findFirst({
-      where: {
-        id: primaryImageId,
-        ownerId: variantId,
-        assetOwner: AssetOwner.PRODUCT_IMAGE,
-      },
-    });
-
-    if (!asset) {
-      throw new ApiError(400, "Invalid primary image");
+    if (!variant) {
+      throw new ApiError(404, "Product Variant not found");
     }
 
-    await prisma.asset.updateMany({
+    if (variantPayload.sku && variantPayload.sku !== variant.sku) {
+      const exists = await tx.productVariant.findFirst({
+        where: {
+          sku: variantPayload.sku,
+          NOT: { id: variantId },
+        },
+      });
+      if (exists) throw new ApiError(400, "SKU already exists");
+    }
+
+    if (variantPayload.isDefault === true) {
+      await tx.productVariant.updateMany({
+        where: {
+          productId: variant.productId,
+          isDefault: true,
+        },
+        data: { isDefault: false },
+      });
+    }
+
+    const updatedVariant = await tx.productVariant.update({
+      where: { id: variantId },
+      data: {
+        sku: variantPayload.sku,
+        price: variantPayload.price,
+        mrp: variantPayload.mrp ?? null,
+        stockAvailable: variantPayload.stockAvailable,
+        isActive: variantPayload.isActive,
+        isDefault: variantPayload.isDefault,
+        attributes: variantPayload.attributes ?? undefined,
+      },
+    });
+
+    if (deleteImageIds?.length) {
+      const assets = await tx.asset.findMany({
+        where: {
+          id: { in: deleteImageIds },
+          ownerId: variantId,
+          assetOwner: AssetOwner.PRODUCT_IMAGE,
+        },
+      });
+
+      for (const asset of assets) {
+        if (fs.existsSync(asset.path)) fs.unlinkSync(asset.path);
+        await tx.asset.delete({ where: { id: asset.id } });
+      }
+    }
+
+    if (reorderImages?.length) {
+      await Promise.all(
+        reorderImages.map((img) =>
+          tx.asset.update({
+            where: { id: img.id },
+            data: { order: img.order },
+          })
+        )
+      );
+    }
+
+    if (coverImageId || coverImageIndex !== undefined) {
+      await tx.asset.updateMany({
+        where: {
+          ownerId: variantId,
+          assetOwner: AssetOwner.PRODUCT_IMAGE,
+          isPrimary: true,
+        },
+        data: { isPrimary: false },
+      });
+    }
+
+    if (newImages?.length) {
+      await Promise.all(
+        newImages.map((image, index) =>
+          uploadFileHandler(
+            image,
+            variantId,
+            AssetOwner.PRODUCT_IMAGE,
+            newImageOrder?.[index] ?? 0,
+            coverImageId ? false : index === coverImageIndex
+          )
+        )
+      );
+    }
+
+    if (coverImageId) {
+      const asset = await tx.asset.findFirst({
+        where: {
+          id: coverImageId,
+          ownerId: variantId,
+          assetOwner: AssetOwner.PRODUCT_IMAGE,
+        },
+      });
+
+      if (!asset) {
+        throw new ApiError(400, "Invalid cover image");
+      }
+
+      await tx.asset.update({
+        where: { id: coverImageId },
+        data: { isPrimary: true },
+      });
+    }
+
+    const primaryExists = await tx.asset.findFirst({
       where: {
         ownerId: variantId,
         assetOwner: AssetOwner.PRODUCT_IMAGE,
         isPrimary: true,
       },
-      data: { isPrimary: false },
     });
 
-    await prisma.asset.update({
-      where: { id: primaryImageId },
-      data: { isPrimary: true },
-    });
-  }
+    if (!primaryExists) {
+      const fallback = await tx.asset.findFirst({
+        where: {
+          ownerId: variantId,
+          assetOwner: AssetOwner.PRODUCT_IMAGE,
+        },
+        orderBy: { order: "asc" },
+      });
 
-  const assets = await prisma.asset.findMany({
-    where: {
-      ownerId: variantId,
-      assetOwner: AssetOwner.PRODUCT_IMAGE,
-    },
-    orderBy: { order: "asc" },
+      if (fallback) {
+        await tx.asset.update({
+          where: { id: fallback.id },
+          data: { isPrimary: true },
+        });
+      }
+    }
+
+    const assets = await tx.asset.findMany({
+      where: {
+        ownerId: variantId,
+        assetOwner: AssetOwner.PRODUCT_IMAGE,
+      },
+      orderBy: [{ isPrimary: "desc" }, { order: "asc" }],
+    });
+
+    return {
+      ...updatedVariant,
+      images: assets,
+    };
   });
-
-  return {
-    ...updatedVariant,
-    images: assets,
-  };
 };
 
 export const deleteProductVariantService = async (id: string) => {
@@ -309,6 +337,13 @@ export const deleteProductVariantService = async (id: string) => {
 
     const deletedVariant = await prisma.productVariant.delete({
       where: { id },
+    });
+
+    await prisma.asset.deleteMany({
+      where: {
+        ownerId: deletedVariant.id,
+        assetOwner: AssetOwner.PRODUCT_IMAGE,
+      },
     });
 
     return deletedVariant;
