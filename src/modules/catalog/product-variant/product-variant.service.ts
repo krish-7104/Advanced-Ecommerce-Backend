@@ -157,6 +157,7 @@ export const updateProductVariantService = async ({
   deleteImageIds,
   reorderImages,
   newImageOrder,
+  primaryImageId,
 }: UpdateVariantInputTypes) => {
   const variant = await prisma.productVariant.findUnique({
     where: { id: variantId },
@@ -241,6 +242,34 @@ export const updateProductVariantService = async ({
         )
       )
     );
+  }
+
+  if (primaryImageId) {
+    const asset = await prisma.asset.findFirst({
+      where: {
+        id: primaryImageId,
+        ownerId: variantId,
+        assetOwner: AssetOwner.PRODUCT_IMAGE,
+      },
+    });
+
+    if (!asset) {
+      throw new ApiError(400, "Invalid primary image");
+    }
+
+    await prisma.asset.updateMany({
+      where: {
+        ownerId: variantId,
+        assetOwner: AssetOwner.PRODUCT_IMAGE,
+        isPrimary: true,
+      },
+      data: { isPrimary: false },
+    });
+
+    await prisma.asset.update({
+      where: { id: primaryImageId },
+      data: { isPrimary: true },
+    });
   }
 
   const assets = await prisma.asset.findMany({
