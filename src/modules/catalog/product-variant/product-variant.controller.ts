@@ -50,8 +50,7 @@ export const getAllProductVariantsController = async (
   req: Request,
   res: Response
 ) => {
-  const { productId } = req.params;
-  const productVariants = await getAllProductVariantsService(productId);
+  const productVariants = await getAllProductVariantsService();
   res.send(
     new ApiResponse(201, productVariants, "Product Variants get successfully!")
   );

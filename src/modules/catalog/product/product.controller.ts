@@ -17,7 +17,33 @@ export const createProductController = async (req: Request, res: Response) => {
   }
   if (!attributesSchema) {
     throw new ApiError(400, "attributesSchema is required!");
+  } else {
+    let parsedAttributesSchema: any = {};
+
+    // {
+    //   "0": { "key": "Color", "options": ["Red", "Blue"] },
+    //   "1": { "key": "Size", "options": ["S", "M"] }
+    // }
+
+    const keys = Object.keys(parsedAttributesSchema);
+    const options = Object.values(parsedAttributesSchema);
+    if (keys.length !== new Set(keys).size) {
+      throw new ApiError(400, "Attributes schema keys must be unique!");
+    }
+    if (
+      options.some(
+        (option: any) => !option.options || option.options.length === 0
+      )
+    ) {
+      throw new ApiError(
+        400,
+        "Attributes schema options must be an array and must have at least one option!"
+      );
+    }
+
+    req.body.attributesSchema = parsedAttributesSchema;
   }
+
   if (!categoryId) {
     throw new ApiError(400, "categoryId is required!");
   }

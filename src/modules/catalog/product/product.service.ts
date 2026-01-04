@@ -17,6 +17,8 @@ export const createProductSerice = async (payload: ProductModel) => {
       isFeatured,
     } = payload;
 
+    console.log(payload);
+
     if (name) {
       const checkname = await prisma.product.findFirst({
         where: {

@@ -74,12 +74,9 @@ export const createProductVariantService = async (
   }
 };
 
-export const getAllProductVariantsService = async (productId: string) => {
+export const getAllProductVariantsService = async () => {
   try {
     const productVariants = await prisma.productVariant.findMany({
-      where: {
-        productId: productId,
-      },
       include: {
         product: {
           include: {

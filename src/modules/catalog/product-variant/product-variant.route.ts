@@ -15,7 +15,7 @@ import { parseFormData } from "../../../middlewares/parse-formdata.middleware.js
 
 const router = express.Router();
 
-router.get("/all/:productId", authMiddleware, getAllProductVariantsController);
+router.get("/all", authMiddleware, getAllProductVariantsController);
 router.post(
   "/",
   authMiddleware,
