@@ -161,39 +161,24 @@ export const getAllProductsService = async (
 
     const Products = await prisma.product.findMany({
       where,
-      select: {
-        id: true,
-        name: true,
-
+      include: {
         _count: {
           select: {
             variants: true,
           },
         },
-        variants: {
-          select: {
-            id: true,
-            sku: true,
-          },
-        },
-
         category: {
           select: {
-            id: true,
-            name: true,
-            slug: true,
-            level: true,
-            isActive: true,
-
             parent: {
               select: {
                 id: true,
                 name: true,
-                slug: true,
                 level: true,
-                isActive: true,
               },
             },
+            id: true,
+            name: true,
+            level: true,
           },
         },
       },
