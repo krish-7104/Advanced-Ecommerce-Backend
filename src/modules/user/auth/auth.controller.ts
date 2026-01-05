@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ApiError from "../../utils/ApiError";
+import ApiError from "../../../utils/ApiError";
 import {
   registerUserService,
   loginUserService,
@@ -8,11 +8,11 @@ import {
   aboutUserService,
   logoutUserService,
 } from "./auth.service";
-import ApiResponse from "../../utils/ApiResponse";
+import ApiResponse from "../../../utils/ApiResponse";
 import {
   ACCESS_COOKIE_OPTIONS,
   REFRESH_COOKIE_OPTIONS,
-} from "../../utils/constants";
+} from "../../../utils/constants";
 
 export const registerUserController = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -57,7 +57,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
 };
 
 export const updateUserController = async (req: Request, res: Response) => {
-  const userId = req.params.id || req?.user?.userId;
+  const userId = req?.user?.userId;
 
   if (!userId) {
     throw new ApiError(400, "userId is missing");
@@ -69,7 +69,7 @@ export const updateUserController = async (req: Request, res: Response) => {
 };
 
 export const aboutUserController = async (req: Request, res: Response) => {
-  const userId = req.params.id || req?.user?.userId;
+  const userId = req?.user?.userId;
   const queryParams = req.query;
 
   if (!userId) {

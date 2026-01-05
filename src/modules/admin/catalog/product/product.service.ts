@@ -1,8 +1,8 @@
-import { AssetOwner } from "../../../../generated/prisma/enums";
-import { ProductModel } from "../../../../generated/prisma/models";
-import ApiError from "../../../utils/ApiError";
-import { prisma } from "../../../utils/prisma";
-import { addAssetToPayload } from "../../../utils/upload-handlers/add-asset-to-payload";
+import { AssetOwner } from "../../../../../generated/prisma/enums";
+import { ProductModel } from "../../../../../generated/prisma/models";
+import ApiError from "../../../../utils/ApiError";
+import { prisma } from "../../../../utils/prisma";
+import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { GetAllProductsQueryParams } from "./product.types";
 
 export const createProductSerice = async (payload: ProductModel) => {

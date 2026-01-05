@@ -4,10 +4,10 @@ import ApiResponse from "./utils/ApiResponse.js";
 import ApiError from "./utils/ApiError.js";
 import cors from "cors";
 import "dotenv/config";
-import userAuthRoutes from "./modules/auth/auth.route.js";
-import categoryRoutes from "./modules/catalog/category/category.route.js";
-import productRoutes from "./modules/catalog/product/product.route.js";
-import productVariantRoutes from "./modules/catalog/product-variant/product-variant.route.js";
+import userAuthRoutes from "./modules/user/auth/auth.route.js";
+import categoryRoutes from "./modules/admin/catalog/category/category.route.js";
+import productRoutes from "./modules/admin/catalog/product/product.route.js";
+import productVariantRoutes from "./modules/admin/catalog/product-variant/product-variant.route.js";
 import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
 import roleRoutes from "./modules/admin/roles/role.route.js";
 import path from "path";
@@ -31,9 +31,10 @@ app.use(
 
 // User Authentication
 app.use("/api/v1/users/auth", userAuthRoutes);
-app.use("/api/v1/category", categoryRoutes);
-app.use("/api/v1/product", productRoutes);
-app.use("/api/v1/product/variants", productVariantRoutes);
+
+app.use("/api/v1/admin/category", categoryRoutes);
+app.use("/api/v1/admin/product", productRoutes);
+app.use("/api/v1/admin/product/variants", productVariantRoutes);
 
 // Admin
 app.use("/api/v1/admin/auth", adminAuthRoutes);

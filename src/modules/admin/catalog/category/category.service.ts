@@ -1,7 +1,6 @@
-import { CategoryModel } from "../../../../generated/prisma/models";
-import ApiError from "../../../utils/ApiError";
-import { toBool } from "../../../utils/common-functions";
-import { prisma } from "../../../utils/prisma";
+import { CategoryModel } from "../../../../../generated/prisma/models";
+import ApiError from "../../../../utils/ApiError";
+import { prisma } from "../../../../utils/prisma";
 import { GetAllCategoriesQueryParams } from "./category.types";
 
 export const createCategorySerice = async (payload: CategoryModel) => {

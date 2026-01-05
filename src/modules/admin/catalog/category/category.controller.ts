@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ApiError from "../../../utils/ApiError";
+import ApiError from "../../../../utils/ApiError";
 import {
   createCategorySerice,
   deleteCategoryService,
@@ -7,7 +7,7 @@ import {
   getCategoryByIdService,
   updateCategoryService,
 } from "./category.service";
-import ApiResponse from "../../../utils/ApiResponse";
+import ApiResponse from "../../../../utils/ApiResponse";
 
 export const createCategoryController = async (req: Request, res: Response) => {
   const { name } = req.body;

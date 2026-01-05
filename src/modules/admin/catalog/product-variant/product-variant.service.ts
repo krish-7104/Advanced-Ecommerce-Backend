@@ -1,9 +1,9 @@
-import { ProductVariantModel } from "../../../../generated/prisma/models";
-import ApiError from "../../../utils/ApiError";
-import { prisma } from "../../../utils/prisma";
-import { uploadFileHandler } from "../../../utils/upload-handlers/upload-file-handler";
-import { AssetOwner } from "../../../../generated/prisma/browser";
-import { addAssetToPayload } from "../../../utils/upload-handlers/add-asset-to-payload";
+import { ProductVariantModel } from "../../../../../generated/prisma/models";
+import ApiError from "../../../../utils/ApiError";
+import { prisma } from "../../../../utils/prisma";
+import { uploadFileHandler } from "../../../../utils/upload-handlers/upload-file-handler";
+import { AssetOwner } from "../../../../../generated/prisma/browser";
+import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { UpdateVariantInputTypes } from "./product-variant.types";
 import fs from "fs";
 

@@ -1,19 +1,20 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { prisma } from "../../utils/prisma";
-import ApiError from "../../utils/ApiError";
 import {
   AboutUserQueryParams,
   LoginUserPayload,
   RegisterUserPayload,
   UserUpdatePayload,
 } from "./auth.types";
+
+import "dotenv/config";
+import ApiError from "../../../utils/ApiError";
+import { prisma } from "../../../utils/prisma";
 import {
   JWT_ACCESS_TOKEN_TTL,
   REFRESH_TOKEN_EXPIRY_MS,
-} from "../../utils/constants";
-import "dotenv/config";
+} from "../../../utils/constants";
 
 export const registerUserService = async (payload: RegisterUserPayload) => {
   try {
@@ -119,6 +120,13 @@ export const loginUserService = async (payload: LoginUserPayload) => {
       user: {
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        emailVerified: user.emailVerified,
+        phoneVerified: user.phoneVerified,
+        emailVerifiedAt: user.emailVerifiedAt,
+        phoneVerifiedAt: user.phoneVerifiedAt,
       },
       accessToken,
       refreshToken,

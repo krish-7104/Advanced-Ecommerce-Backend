@@ -1,6 +1,6 @@
 import express from "express";
-import { limitToAdmin } from "../../../middlewares/limit-to-admin.middleware.js";
-import { authMiddleware } from "../../../middlewares/auth.middleware.js";
+import { limitToAdmin } from "../../../../middlewares/limit-to-admin.middleware.js";
+import { authMiddleware } from "../../../../middlewares/auth.middleware.js";
 import {
   createProductController,
   getProductByIdController,

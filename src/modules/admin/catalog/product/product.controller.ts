@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ApiError from "../../../utils/ApiError";
+import ApiError from "../../../../utils/ApiError";
 import {
   createProductSerice,
   deleteProductService,
@@ -7,7 +7,7 @@ import {
   getProductByIdService,
   updateProductService,
 } from "./product.service";
-import ApiResponse from "../../../utils/ApiResponse";
+import ApiResponse from "../../../../utils/ApiResponse";
 import { GetAllProductsQueryParams } from "./product.types";
 
 export const createProductController = async (req: Request, res: Response) => {

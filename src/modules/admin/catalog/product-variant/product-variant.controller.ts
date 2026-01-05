@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ApiError from "../../../utils/ApiError";
+import ApiError from "../../../../utils/ApiError";
 import {
   createProductVariantService,
   deleteProductVariantService,
@@ -7,7 +7,7 @@ import {
   getProductVariantByIdService,
   updateProductVariantService,
 } from "./product-variant.service";
-import ApiResponse from "../../../utils/ApiResponse";
+import ApiResponse from "../../../../utils/ApiResponse";
 
 export const createProductVariantController = async (
   req: Request,

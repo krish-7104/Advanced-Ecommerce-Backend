@@ -1,6 +1,6 @@
 import express from "express";
-import { limitToAdmin } from "../../../middlewares/limit-to-admin.middleware.js";
-import { authMiddleware } from "../../../middlewares/auth.middleware.js";
+import { limitToAdmin } from "../../../../middlewares/limit-to-admin.middleware.js";
+import { authMiddleware } from "../../../../middlewares/auth.middleware.js";
 import {
   createProductVariantController,
   deleteProductVariantController,
@@ -10,8 +10,8 @@ import {
   // updateProductVariantController,
   // deleteProductVariantController,
 } from "./product-variant.controller.js";
-import { upload } from "../../../utils/upload-handlers/multer.js";
-import { parseFormData } from "../../../middlewares/parse-formdata.middleware.js";
+import { upload } from "../../../../utils/upload-handlers/multer.js";
+import { parseFormData } from "../../../../middlewares/parse-formdata.middleware.js";
 
 const router = express.Router();
 
