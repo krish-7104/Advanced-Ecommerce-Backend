@@ -99,7 +99,6 @@ model Product {
   name        String
   slug        String  @unique
   description String?
-  brand       String?
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])

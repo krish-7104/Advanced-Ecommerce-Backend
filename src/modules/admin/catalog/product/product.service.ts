@@ -12,12 +12,9 @@ export const createProductSerice = async (payload: ProductModel) => {
       description,
       slug,
       attributesSchema,
-      brand,
       categoryId,
       isFeatured,
     } = payload;
-
-    console.log(payload);
 
     if (name) {
       const checkname = await prisma.product.findFirst({
@@ -43,7 +40,6 @@ export const createProductSerice = async (payload: ProductModel) => {
         description,
         slug: newSlug,
         attributesSchema: attributesSchema || {},
-        brand,
         categoryId,
         isFeatured,
       },
@@ -163,39 +159,60 @@ export const getAllProductsService = async (
       where.variants = { not: [] };
     }
 
-    const Product = await prisma.product.findMany({
+    const Products = await prisma.product.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        name: true,
+
         _count: {
           select: {
             variants: true,
           },
         },
-        category: {
-          include: {
-            parent: true,
+        variants: {
+          select: {
+            id: true,
+            sku: true,
           },
         },
-        variants: {
-          where: {
+
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            level: true,
             isActive: true,
-            isDefault: true,
+
+            parent: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                level: true,
+                isActive: true,
+              },
+            },
           },
         },
       },
     });
 
     const payload = await Promise.all(
-      Product.map((product: any) =>
-        addAssetToPayload(
-          product.variants[0]?.id || "",
-          AssetOwner.PRODUCT_IMAGE,
-          true
-        )
-      )
+      Products.map((product: any) => {
+        if (product._count.variants > 0) {
+          return addAssetToPayload(
+            product.variants?.[0]?.id || "",
+            AssetOwner.PRODUCT_IMAGE,
+            true
+          );
+        }
+        return null;
+      })
     );
 
-    return Product.map((product: any, index: number) => ({
+    return Products.map((product: any, index: number) => ({
       ...product,
       ...payload[index],
     }));
