@@ -3,7 +3,7 @@ import { limitToAdmin } from "../../../../middlewares/limit-to-admin.middleware.
 import { authMiddleware } from "../../../../middlewares/auth.middleware.js";
 import {
   createCategoryController,
-  getAllCategorieController,
+  getAllCategoriesController,
   getCategoryByIdController,
   updateCategoryController,
   deleteCategoryController,
@@ -11,7 +11,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getAllCategorieController);
+router.get("/", authMiddleware, getAllCategoriesController);
 router.post("", authMiddleware, limitToAdmin, createCategoryController);
 router.get("/:id", authMiddleware, getCategoryByIdController);
 router.patch("/:id", authMiddleware, limitToAdmin, updateCategoryController);

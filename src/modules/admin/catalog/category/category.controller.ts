@@ -20,7 +20,7 @@ export const createCategoryController = async (req: Request, res: Response) => {
   res.send(new ApiResponse(201, category, "Category created successfully!"));
 };
 
-export const getAllCategorieController = async (
+export const getAllCategoriesController = async (
   req: Request,
   res: Response
 ) => {
