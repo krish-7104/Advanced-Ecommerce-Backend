@@ -51,12 +51,8 @@ export const getAllProductsService = async ({
     const where: Prisma.ProductVariantWhereInput = {
       isActive: true,
       isDefault: true,
-      stockAvailable: { gte: 1 },
       product: {
         isActive: true,
-        ...(featured !== undefined && {
-          isFeatured: featured === "true" ? true : false,
-        }),
       },
     };
 
