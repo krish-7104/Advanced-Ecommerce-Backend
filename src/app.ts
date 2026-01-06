@@ -12,6 +12,7 @@ import productVariantRoutes from "./modules/admin/catalog/product-variant/produc
 import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
 import roleRoutes from "./modules/admin/roles/role.route.js";
 import userCategoryRoutes from "./modules/user/catalog/category/category.route.js";
+import userProductRoutes from "./modules/user/catalog/product/product.route.js";
 
 const app = express();
 app.use(express.json());
@@ -33,7 +34,7 @@ app.use(
 // User Authentication
 app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/users/category", userCategoryRoutes);
-// app.use("/api/v1/users/product", productRoutes);
+app.use("/api/v1/users/product", userProductRoutes);
 
 // Admin
 app.use("/api/v1/admin/category", categoryRoutes);
