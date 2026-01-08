@@ -35,6 +35,7 @@ export const getAllProductsService = async ({
   page,
   limit,
   featured,
+  search,
 }: GetAllProductsQueryParams) => {
   try {
     const shouldPaginate =
@@ -48,12 +49,43 @@ export const getAllProductsService = async ({
         ? (safePage - 1) * safeLimit
         : undefined;
 
+    const productWhere: Prisma.ProductWhereInput = {
+      isActive: true,
+    };
+
+    if (typeof featured === "boolean") {
+      productWhere.isFeatured = featured;
+    }
+
+    if (search) {
+      productWhere.OR = [
+        {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          description: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          category: {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        },
+      ];
+    }
+
     const where: Prisma.ProductVariantWhereInput = {
       isActive: true,
       isDefault: true,
-      product: {
-        isActive: true,
-      },
+      product: productWhere,
     };
 
     const [products, total] = await Promise.all([

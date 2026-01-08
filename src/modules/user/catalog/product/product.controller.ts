@@ -8,11 +8,16 @@ import ApiResponse from "../../../../utils/ApiResponse";
 import { GetAllProductsQueryParams } from "./product.types";
 
 export const getAllProductsController = async (req: Request, res: Response) => {
-  const { page, limit, featured } = req.query as GetAllProductsQueryParams;
+  const { page, limit, featured, search } =
+    req.query as GetAllProductsQueryParams;
+
+  const featuredFlag = featured && featured === "true" ? true : undefined;
+
   const products = await getAllProductsService({
     page: Number(page),
     limit: Number(limit),
-    featured: featured == "true" ? true : false,
+    featured: featuredFlag,
+    search,
   });
   res.send(
     new ApiResponse(
