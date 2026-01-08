@@ -11,7 +11,7 @@ import ApiResponse from "../../../../utils/ApiResponse";
 
 export const createCategoryController = async (req: Request, res: Response) => {
   const { name } = req.body;
-  const image = (req.file as any)?.image;
+  const image = req.file as any;
 
   if (!name) throw new ApiError(400, "name is required!");
   if (!image) throw new ApiError(400, "image is required!");
@@ -43,7 +43,7 @@ export const getCategoryByIdController = async (
 
 export const updateCategoryController = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const image = (req.file as any)?.image;
+  const image = req.file as any;
   if (!id) {
     throw new ApiError(400, "Category ID is required!");
   }

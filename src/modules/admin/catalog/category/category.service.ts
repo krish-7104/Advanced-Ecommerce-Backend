@@ -113,7 +113,6 @@ export const updateCategoryService = async (
   image: Express.Multer.File
 ) => {
   const prismaTx = prisma.$transaction.bind(prisma);
-
   try {
     const result = await prismaTx(async (tx) => {
       // Update category
@@ -178,6 +177,16 @@ export const deleteCategoryService = async (id: string) => {
 
     if (!category) {
       throw new ApiError(404, "Category not found!");
+    }
+
+    const findSubCategories = await prisma.category.findMany({
+      where: {
+        parentId: id,
+      },
+    });
+
+    if (findSubCategories.length > 0) {
+      throw new ApiError(400, "Category has sub categories, cannot be deleted");
     }
 
     const result = await prisma.category.delete({
