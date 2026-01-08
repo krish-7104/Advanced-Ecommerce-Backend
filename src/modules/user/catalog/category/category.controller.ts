@@ -5,12 +5,14 @@ import {
   getCategoryByIdService,
 } from "./category.service";
 import ApiResponse from "../../../../utils/ApiResponse";
+import { GetAllCategoriesQueryParams } from "./category.types";
 
 export const getAllCategoriesController = async (
   req: Request,
   res: Response
 ) => {
-  const categories = await getAllCategoriesService();
+  const queryParams = req.query as GetAllCategoriesQueryParams;
+  const categories = await getAllCategoriesService(queryParams);
   res.send(new ApiResponse(200, categories, "Categories get successfully!"));
 };
 

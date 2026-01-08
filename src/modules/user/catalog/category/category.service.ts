@@ -2,6 +2,7 @@ import { AssetOwner } from "../../../../../generated/prisma/enums";
 import ApiError from "../../../../utils/ApiError";
 import { prisma } from "../../../../utils/prisma";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
+import { GetAllCategoriesQueryParams } from "./category.types";
 
 export const getCategoryByIdService = async (id: string) => {
   try {
@@ -71,16 +72,30 @@ export const getCategoryByIdService = async (id: string) => {
       throw new ApiError(404, "Category not found!");
     }
 
-    return category;
+    const categoryAsset = await addAssetToPayload(
+      category.id,
+      AssetOwner.CATEGORY_IMAGE,
+      true
+    );
+
+    return { ...category, image: categoryAsset?.images?.[0] || null };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };
 
-export const getAllCategoriesService = async () => {
+export const getAllCategoriesService = async (
+  queryParams: GetAllCategoriesQueryParams
+) => {
   try {
+    const { level } = queryParams;
+
     const where: any = {};
+
+    if (level) {
+      where.level = Number(level);
+    }
 
     const category = await prisma.category.findMany({
       where,
@@ -103,7 +118,16 @@ export const getAllCategoriesService = async () => {
       },
     });
 
-    return category;
+    const payload = await Promise.all(
+      category.map((category: any) => {
+        return addAssetToPayload(category.id, AssetOwner.CATEGORY_IMAGE, true);
+      })
+    );
+
+    return category.map((category: any, index: number) => ({
+      ...category,
+      image: payload[index]?.images?.[0] || null,
+    }));
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");

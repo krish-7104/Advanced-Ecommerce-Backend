@@ -1,3 +1,3 @@
 export interface GetAllCategoriesQueryParams {
-  type?: "PARENT" | "CHILD";
+  level?: number;
 }

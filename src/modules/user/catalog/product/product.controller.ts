@@ -23,8 +23,8 @@ export const getAllProductsController = async (req: Request, res: Response) => {
     new ApiResponse(
       200,
       products?.data,
-      products?.pagination,
-      "Products get successfully!"
+      "Products get successfully!",
+      products?.pagination
     )
   );
 };

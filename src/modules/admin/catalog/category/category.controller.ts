@@ -11,15 +11,15 @@ import ApiResponse from "../../../../utils/ApiResponse";
 
 export const createCategoryController = async (req: Request, res: Response) => {
   const { name } = req.body;
-  if (!name) {
-    throw new ApiError(400, "name is required!");
-  }
+  const image = (req.file as any)?.image;
 
-  const category = await createCategorySerice(req.body);
+  if (!name) throw new ApiError(400, "name is required!");
+  if (!image) throw new ApiError(400, "image is required!");
+
+  const category = await createCategorySerice(req.body, image);
 
   res.send(new ApiResponse(201, category, "Category created successfully!"));
 };
-
 export const getAllCategoriesController = async (
   req: Request,
   res: Response
@@ -43,10 +43,11 @@ export const getCategoryByIdController = async (
 
 export const updateCategoryController = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const image = (req.file as any)?.image;
   if (!id) {
     throw new ApiError(400, "Category ID is required!");
   }
-  const category = await updateCategoryService(id, req.body);
+  const category = await updateCategoryService(id, req.body, image);
   res.send(new ApiResponse(200, category, "Category updated successfully!"));
 };
 

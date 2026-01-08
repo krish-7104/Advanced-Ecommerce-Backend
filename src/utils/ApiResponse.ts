@@ -7,14 +7,14 @@ class ApiResponse {
   constructor(
     statusCode: number,
     data: any,
-    pagination?: any,
-    message = "Success"
+    message = "Success",
+    pagination?: any
   ) {
     this.statusCode = statusCode;
     this.data = data;
-    this.pagination = pagination;
     this.message = message;
     this.success = statusCode < 400;
+    this.pagination = pagination;
   }
 }
 
