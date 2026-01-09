@@ -45,7 +45,7 @@ model Address {
   user   User   @relation(fields: [userId], references: [id])
 
   name        String
-  phoneNumber String
+  phoneNumber String?
 
   line1      String
   line2      String?

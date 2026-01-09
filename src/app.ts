@@ -13,6 +13,8 @@ import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
 import roleRoutes from "./modules/admin/roles/role.route.js";
 import userCategoryRoutes from "./modules/user/catalog/category/category.route.js";
 import userProductRoutes from "./modules/user/catalog/product/product.route.js";
+import userAddressRoutes from "./modules/user/address/address.route.js";
+import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
 
 const app = express();
 app.use(express.json());
@@ -31,10 +33,14 @@ app.use(
   })
 );
 
+// Reference Data
+app.use("/api/v1/states", statesCitiesRoutes);
+
 // User Authentication
 app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/users/category", userCategoryRoutes);
 app.use("/api/v1/users/product", userProductRoutes);
+app.use("/api/v1/users/address", userAddressRoutes);
 
 // Admin
 app.use("/api/v1/admin/category", categoryRoutes);
