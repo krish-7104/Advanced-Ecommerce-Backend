@@ -31,6 +31,17 @@ export const createAddressService = async (
       throw new ApiError(400, "UserId is required");
     }
 
+    const existingAddress = await prisma.address.findFirst({
+      where: {
+        name: payload.name.trim(),
+        userId,
+      },
+    });
+
+    if (existingAddress) {
+      throw new ApiError(400, "Address with this name already exists");
+    }
+
     const {
       name,
       phoneNumber,

@@ -16,9 +16,7 @@ export type UserUpdatePayload = {
   phoneNumber?: string | null;
   email?: string;
   emailVerified?: boolean;
-  phoneVerified?: boolean;
   emailVerifiedAt?: Date | null;
-  phoneVerifiedAt?: Date | null;
 };
 
 export type AboutUserQueryParams = {
@@ -29,3 +27,16 @@ export type AboutUserQueryParams = {
   order?: boolean | string;
   orderCount?: boolean | string;
 };
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface UpdatePasswordPayload {
+  token: string;
+  newPassword: string;
+}
+
+export interface VerifyEmailPayload {
+  token: string;
+}

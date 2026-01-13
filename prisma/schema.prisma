@@ -23,10 +23,8 @@ model User {
   phoneNumber String? @unique
 
   emailVerified Boolean @default(false)
-  phoneVerified Boolean @default(false)
 
   emailVerifiedAt DateTime?
-  phoneVerifiedAt DateTime?
 
   addresses  Address[]
   userTokens UserToken[]

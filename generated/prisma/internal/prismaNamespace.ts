@@ -1800,9 +1800,7 @@ export const UserScalarFieldEnum = {
   password: 'password',
   phoneNumber: 'phoneNumber',
   emailVerified: 'emailVerified',
-  phoneVerified: 'phoneVerified',
   emailVerifiedAt: 'emailVerifiedAt',
-  phoneVerifiedAt: 'phoneVerifiedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -5,6 +5,7 @@ import {
   createAddressController,
   updateAddressController,
   deleteAddressController,
+  setDefaultAddressController,
 } from "./address.controller.js";
 
 const router = express.Router();
@@ -13,5 +14,6 @@ router.get("/", authMiddleware, getAllAddressesController);
 router.post("/", authMiddleware, createAddressController);
 router.patch("/:id", authMiddleware, updateAddressController);
 router.delete("/:id", authMiddleware, deleteAddressController);
+router.patch("/:id/set-default", authMiddleware, setDefaultAddressController);
 
 export default router;

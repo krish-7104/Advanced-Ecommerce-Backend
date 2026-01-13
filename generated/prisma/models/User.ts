@@ -32,9 +32,7 @@ export type UserMinAggregateOutputType = {
   password: string | null
   phoneNumber: string | null
   emailVerified: boolean | null
-  phoneVerified: boolean | null
   emailVerifiedAt: Date | null
-  phoneVerifiedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,9 +45,7 @@ export type UserMaxAggregateOutputType = {
   password: string | null
   phoneNumber: string | null
   emailVerified: boolean | null
-  phoneVerified: boolean | null
   emailVerifiedAt: Date | null
-  phoneVerifiedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,9 +58,7 @@ export type UserCountAggregateOutputType = {
   password: number
   phoneNumber: number
   emailVerified: number
-  phoneVerified: number
   emailVerifiedAt: number
-  phoneVerifiedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -79,9 +73,7 @@ export type UserMinAggregateInputType = {
   password?: true
   phoneNumber?: true
   emailVerified?: true
-  phoneVerified?: true
   emailVerifiedAt?: true
-  phoneVerifiedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,9 +86,7 @@ export type UserMaxAggregateInputType = {
   password?: true
   phoneNumber?: true
   emailVerified?: true
-  phoneVerified?: true
   emailVerifiedAt?: true
-  phoneVerifiedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -109,9 +99,7 @@ export type UserCountAggregateInputType = {
   password?: true
   phoneNumber?: true
   emailVerified?: true
-  phoneVerified?: true
   emailVerifiedAt?: true
-  phoneVerifiedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,9 +185,7 @@ export type UserGroupByOutputType = {
   password: string | null
   phoneNumber: string | null
   emailVerified: boolean
-  phoneVerified: boolean
   emailVerifiedAt: Date | null
-  phoneVerifiedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -233,9 +219,7 @@ export type UserWhereInput = {
   password?: Prisma.StringNullableFilter<"User"> | string | null
   phoneNumber?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
-  phoneVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
-  phoneVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   addresses?: Prisma.AddressListRelationFilter
@@ -253,9 +237,7 @@ export type UserOrderByWithRelationInput = {
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   phoneNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
-  phoneVerified?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  phoneVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   addresses?: Prisma.AddressOrderByRelationAggregateInput
@@ -276,9 +258,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   lastName?: Prisma.StringNullableFilter<"User"> | string | null
   password?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
-  phoneVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
-  phoneVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   addresses?: Prisma.AddressListRelationFilter
@@ -296,9 +276,7 @@ export type UserOrderByWithAggregationInput = {
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   phoneNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
-  phoneVerified?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  phoneVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -317,9 +295,7 @@ export type UserScalarWhereWithAggregatesInput = {
   password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   phoneNumber?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
-  phoneVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   emailVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-  phoneVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -332,9 +308,7 @@ export type UserCreateInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -352,9 +326,7 @@ export type UserUncheckedCreateInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -372,9 +344,7 @@ export type UserUpdateInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -392,9 +362,7 @@ export type UserUncheckedUpdateInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -412,9 +380,7 @@ export type UserCreateManyInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -427,9 +393,7 @@ export type UserUpdateManyMutationInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -442,9 +406,7 @@ export type UserUncheckedUpdateManyInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -457,9 +419,7 @@ export type UserCountOrderByAggregateInput = {
   password?: Prisma.SortOrder
   phoneNumber?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
-  phoneVerified?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrder
-  phoneVerifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -472,9 +432,7 @@ export type UserMaxOrderByAggregateInput = {
   password?: Prisma.SortOrder
   phoneNumber?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
-  phoneVerified?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrder
-  phoneVerifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -487,9 +445,7 @@ export type UserMinOrderByAggregateInput = {
   password?: Prisma.SortOrder
   phoneNumber?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
-  phoneVerified?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrder
-  phoneVerifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -597,9 +553,7 @@ export type UserCreateWithoutAddressesInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userTokens?: Prisma.UserTokenCreateNestedManyWithoutUserInput
@@ -616,9 +570,7 @@ export type UserUncheckedCreateWithoutAddressesInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userTokens?: Prisma.UserTokenUncheckedCreateNestedManyWithoutUserInput
@@ -651,9 +603,7 @@ export type UserUpdateWithoutAddressesInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userTokens?: Prisma.UserTokenUpdateManyWithoutUserNestedInput
@@ -670,9 +620,7 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userTokens?: Prisma.UserTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -689,9 +637,7 @@ export type UserCreateWithoutUserTokensInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -708,9 +654,7 @@ export type UserUncheckedCreateWithoutUserTokensInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -743,9 +687,7 @@ export type UserUpdateWithoutUserTokensInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -762,9 +704,7 @@ export type UserUncheckedUpdateWithoutUserTokensInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -781,9 +721,7 @@ export type UserCreateWithoutCartItemsInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -800,9 +738,7 @@ export type UserUncheckedCreateWithoutCartItemsInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -835,9 +771,7 @@ export type UserUpdateWithoutCartItemsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -854,9 +788,7 @@ export type UserUncheckedUpdateWithoutCartItemsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -873,9 +805,7 @@ export type UserCreateWithoutOrdersInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -892,9 +822,7 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -927,9 +855,7 @@ export type UserUpdateWithoutOrdersInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -946,9 +872,7 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -965,9 +889,7 @@ export type UserCreateWithoutReviewsInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
@@ -984,9 +906,7 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   password?: string | null
   phoneNumber?: string | null
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: Date | string | null
-  phoneVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
@@ -1019,9 +939,7 @@ export type UserUpdateWithoutReviewsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
@@ -1038,9 +956,7 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  phoneVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
@@ -1124,9 +1040,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   password?: boolean
   phoneNumber?: boolean
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: boolean
-  phoneVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>
@@ -1145,9 +1059,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   password?: boolean
   phoneNumber?: boolean
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: boolean
-  phoneVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1160,9 +1072,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   password?: boolean
   phoneNumber?: boolean
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: boolean
-  phoneVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1175,14 +1085,12 @@ export type UserSelectScalar = {
   password?: boolean
   phoneNumber?: boolean
   emailVerified?: boolean
-  phoneVerified?: boolean
   emailVerifiedAt?: boolean
-  phoneVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "password" | "phoneNumber" | "emailVerified" | "phoneVerified" | "emailVerifiedAt" | "phoneVerifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "password" | "phoneNumber" | "emailVerified" | "emailVerifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>
   userTokens?: boolean | Prisma.User$userTokensArgs<ExtArgs>
@@ -1211,9 +1119,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     password: string | null
     phoneNumber: string | null
     emailVerified: boolean
-    phoneVerified: boolean
     emailVerifiedAt: Date | null
-    phoneVerifiedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1651,9 +1557,7 @@ export interface UserFieldRefs {
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly phoneNumber: Prisma.FieldRef<"User", 'String'>
   readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
-  readonly phoneVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly emailVerifiedAt: Prisma.FieldRef<"User", 'DateTime'>
-  readonly phoneVerifiedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

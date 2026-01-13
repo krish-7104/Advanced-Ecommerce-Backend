@@ -15,6 +15,8 @@ import userCategoryRoutes from "./modules/user/catalog/category/category.route.j
 import userProductRoutes from "./modules/user/catalog/product/product.route.js";
 import userAddressRoutes from "./modules/user/address/address.route.js";
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
+import adminUserRoutes from "./modules/admin/users/user.route.js";
+import adminAddressRoutes from "./modules/admin/addresses/address.route.js";
 
 const app = express();
 app.use(express.json());
@@ -49,6 +51,8 @@ app.use("/api/v1/admin/product/variants", productVariantRoutes);
 
 app.use("/api/v1/admin/auth", adminAuthRoutes);
 app.use("/api/v1/admin/roles", roleRoutes);
+app.use("/api/v1/admin/users", adminUserRoutes);
+app.use("/api/v1/admin/addresses", adminAddressRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof ApiError) {

@@ -3,9 +3,12 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import {
   AboutUserQueryParams,
+  ForgotPasswordPayload,
   LoginUserPayload,
   RegisterUserPayload,
+  UpdatePasswordPayload,
   UserUpdatePayload,
+  VerifyEmailPayload,
 } from "./auth.types";
 
 import "dotenv/config";
@@ -15,6 +18,10 @@ import {
   JWT_ACCESS_TOKEN_TTL,
   REFRESH_TOKEN_EXPIRY_MS,
 } from "../../../utils/constants";
+import {
+  sendPasswordResetEmail,
+  sendEmailVerificationEmail,
+} from "../../../utils/email.service";
 
 export const registerUserService = async (payload: RegisterUserPayload) => {
   try {
@@ -124,9 +131,7 @@ export const loginUserService = async (payload: LoginUserPayload) => {
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         emailVerified: user.emailVerified,
-        phoneVerified: user.phoneVerified,
         emailVerifiedAt: user.emailVerifiedAt,
-        phoneVerifiedAt: user.phoneVerifiedAt,
       },
       accessToken,
       refreshToken,
@@ -154,9 +159,7 @@ export const updateUserService = async (
       "phoneNumber",
       "email",
       "emailVerified",
-      "phoneVerified",
       "emailVerifiedAt",
-      "phoneVerifiedAt",
     ] as const;
 
     const updatedPayload: Partial<
@@ -215,9 +218,9 @@ export const aboutUserService = async (
         orders: queryParams.order === "true" ? true : false,
         _count: {
           select: {
-            addresses: queryParams.addressCount === "true" ? true : false,
-            cartItems: queryParams.cartCount === "true" ? true : false,
-            orders: queryParams.orderCount === "true" ? true : false,
+            addresses: true,
+            cartItems: true,
+            orders: true,
           },
         },
       },
@@ -244,12 +247,12 @@ export const logoutUserService = async (refreshToken: string) => {
       .update(refreshToken)
       .digest("hex");
 
-    const token = await prisma.adminUserToken.findUnique({
+    const token = await prisma.userToken.findUnique({
       where: { tokenHash },
     });
 
     if (token) {
-      await prisma.adminUserToken.delete({
+      await prisma.userToken.delete({
         where: { id: token.id },
       });
     }
@@ -325,6 +328,312 @@ export const refreshTokenService = async (refreshToken: string) => {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const forgotPasswordService = async (payload: ForgotPasswordPayload) => {
+  try {
+    const { email } = payload;
+
+    if (!email || !email.includes("@")) {
+      throw new ApiError(400, "Invalid email address");
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return {
+        message: "If the email exists, a password reset link has been sent",
+      };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await prisma.userToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt,
+      },
+    });
+
+    await sendPasswordResetEmail(user.email, resetToken);
+
+    return {
+      message: "If the email exists, a password reset link has been sent",
+    };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const updatePasswordService = async (payload: UpdatePasswordPayload) => {
+  try {
+    const { token, newPassword } = payload;
+
+    if (!token) {
+      throw new ApiError(400, "Reset token is required");
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      throw new ApiError(400, "Password must be at least 6 characters long");
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const storedToken = await prisma.userToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    if (!storedToken) {
+      throw new ApiError(400, "Invalid or expired reset token");
+    }
+
+    if (storedToken.revoked) {
+      throw new ApiError(400, "Reset token has already been used");
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      throw new ApiError(400, "Reset token has expired");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: storedToken.userId },
+        data: { password: hashedPassword },
+      });
+
+      await tx.userToken.update({
+        where: { id: storedToken.id },
+        data: { revoked: true },
+      });
+
+      await tx.userToken.updateMany({
+        where: {
+          userId: storedToken.userId,
+          revoked: false,
+        },
+        data: { revoked: true },
+      });
+    });
+
+    return { message: "Password updated successfully" };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const sendEmailVerificationService = async (userId: string) => {
+  try {
+    if (!userId) {
+      throw new ApiError(400, "UserId is required");
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    if (user.emailVerified) {
+      throw new ApiError(400, "Email is already verified");
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(verificationToken)
+      .digest("hex");
+
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await prisma.userToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt,
+      },
+    });
+
+    await sendEmailVerificationEmail(user.email, verificationToken);
+
+    return { message: "Verification email sent successfully" };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const verifyEmailService = async (payload: VerifyEmailPayload) => {
+  try {
+    const { token } = payload;
+
+    if (!token) {
+      throw new ApiError(400, "Verification token is required");
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const storedToken = await prisma.userToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    if (!storedToken) {
+      throw new ApiError(400, "Invalid or expired verification token");
+    }
+
+    if (storedToken.revoked) {
+      throw new ApiError(400, "Verification token has already been used");
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      throw new ApiError(400, "Verification token has expired");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: storedToken.userId },
+        data: {
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
+        },
+      });
+
+      await tx.userToken.update({
+        where: { id: storedToken.id },
+        data: { revoked: true },
+      });
+    });
+
+    return { message: "Email verified successfully" };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const getAllSessionsService = async (userId: string) => {
+  try {
+    if (!userId) {
+      throw new ApiError(400, "UserId is required");
+    }
+
+    const sessions = await prisma.userToken.findMany({
+      where: {
+        userId,
+        revoked: false,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+    });
+
+    return sessions.map((session) => ({
+      id: session.id,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+      isActive: session.expiresAt > new Date(),
+    }));
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const logoutSessionService = async (
+  sessionId: string,
+  userId: string
+) => {
+  try {
+    if (!sessionId) {
+      throw new ApiError(400, "Session ID is required");
+    }
+
+    if (!userId) {
+      throw new ApiError(400, "UserId is required");
+    }
+
+    const session = await prisma.userToken.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      throw new ApiError(404, "Session not found");
+    }
+
+    if (session.userId !== userId) {
+      throw new ApiError(
+        403,
+        "You don't have permission to logout this session"
+      );
+    }
+
+    await prisma.userToken.update({
+      where: { id: sessionId },
+      data: { revoked: true },
+    });
+
+    return { message: "Session logged out successfully" };
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
+
+export const deleteAccountService = async (userId: string) => {
+  try {
+    if (!userId) {
+      throw new ApiError(400, "UserId is required");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.userToken.deleteMany({
+        where: { userId },
+      });
+
+      await tx.address.deleteMany({
+        where: { userId },
+      });
+
+      await tx.user.delete({
+        where: { id: userId },
+      });
+    });
+
+    return { message: "Account deleted successfully" };
   } catch (error: any) {
     if (error instanceof ApiError) {
       throw error;

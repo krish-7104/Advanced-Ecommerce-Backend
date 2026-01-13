@@ -6,6 +6,7 @@ import {
   createAddressService,
   updateAddressService,
   deleteAddressService,
+  setDefaultAddressService,
 } from "./address.service";
 
 export const getAllAddressesController = async (
@@ -73,4 +74,26 @@ export const deleteAddressController = async (req: Request, res: Response) => {
   await deleteAddressService(addressId, userId);
 
   return res.send(new ApiResponse(200, [], "Address deleted successfully"));
+};
+
+export const setDefaultAddressController = async (
+  req: Request,
+  res: Response
+) => {
+  const userId = req?.user?.userId;
+  const addressId = req.params.id;
+
+  if (!userId) {
+    throw new ApiError(400, "userId is missing");
+  }
+
+  if (!addressId) {
+    throw new ApiError(400, "Address ID is required");
+  }
+
+  const address = await setDefaultAddressService(addressId, userId);
+
+  return res.send(
+    new ApiResponse(200, address, "Default address updated successfully")
+  );
 };
