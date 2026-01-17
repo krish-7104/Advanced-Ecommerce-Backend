@@ -14,6 +14,8 @@ import roleRoutes from "./modules/admin/roles/role.route.js";
 import userCategoryRoutes from "./modules/user/catalog/category/category.route.js";
 import userProductRoutes from "./modules/user/catalog/product/product.route.js";
 import userAddressRoutes from "./modules/user/address/address.route.js";
+import userCartRoutes from "./modules/user/cart/cart.route.js";
+import userWishlistRoutes from "./modules/user/wishlist/wishlist.route.js";
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
 import adminUserRoutes from "./modules/admin/users/user.route.js";
 import adminAddressRoutes from "./modules/admin/addresses/address.route.js";
@@ -43,6 +45,8 @@ app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/users/category", userCategoryRoutes);
 app.use("/api/v1/users/product", userProductRoutes);
 app.use("/api/v1/users/address", userAddressRoutes);
+app.use("/api/v1/users/cart", userCartRoutes);
+app.use("/api/v1/users/wishlist", userWishlistRoutes);
 
 // Admin
 app.use("/api/v1/admin/category", categoryRoutes);

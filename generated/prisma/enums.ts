@@ -11,7 +11,7 @@
 
 export const CartItemStatus = {
   ACTIVE: 'ACTIVE',
-  SAVED_FOR_LATER: 'SAVED_FOR_LATER'
+  WISHLISTED: 'WISHLISTED'
 } as const
 
 export type CartItemStatus = (typeof CartItemStatus)[keyof typeof CartItemStatus]

@@ -188,7 +188,9 @@ export const CartItemScalarFieldEnum = {
   userId: 'userId',
   variantId: 'variantId',
   quantity: 'quantity',
-  status: 'status'
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type CartItemScalarFieldEnum = (typeof CartItemScalarFieldEnum)[keyof typeof CartItemScalarFieldEnum]
