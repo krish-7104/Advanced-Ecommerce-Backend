@@ -18,9 +18,7 @@ export const getCartController = async (req: Request, res: Response) => {
 
   const cart = await getCartService(userId);
 
-  return res.send(
-    new ApiResponse(200, cart, "Cart retrieved successfully")
-  );
+  return res.send(new ApiResponse(200, cart, "Cart retrieved successfully"));
 };
 
 export const addToCartController = async (req: Request, res: Response) => {
@@ -37,10 +35,7 @@ export const addToCartController = async (req: Request, res: Response) => {
   );
 };
 
-export const updateCartItemController = async (
-  req: Request,
-  res: Response
-) => {
+export const updateCartItemController = async (req: Request, res: Response) => {
   const userId = req?.user?.userId;
   const cartItemId = req.params.id;
 
@@ -59,10 +54,7 @@ export const updateCartItemController = async (
   );
 };
 
-export const removeFromCartController = async (
-  req: Request,
-  res: Response
-) => {
+export const removeFromCartController = async (req: Request, res: Response) => {
   const userId = req?.user?.userId;
   const cartItemId = req.params.id;
 

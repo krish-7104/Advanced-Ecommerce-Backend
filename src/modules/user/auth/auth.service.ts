@@ -22,6 +22,7 @@ import {
   sendPasswordResetEmail,
   sendEmailVerificationEmail,
 } from "../../../utils/email.service";
+import { CartItemStatus } from "../../../../generated/prisma/enums";
 
 export const registerUserService = async (payload: RegisterUserPayload) => {
   try {
@@ -219,7 +220,11 @@ export const aboutUserService = async (
         _count: {
           select: {
             addresses: true,
-            cartItems: true,
+            cartItems: {
+              where: {
+                status: CartItemStatus.ACTIVE,
+              },
+            },
             orders: true,
           },
         },

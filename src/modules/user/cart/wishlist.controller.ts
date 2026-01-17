@@ -7,7 +7,7 @@ import {
   removeFromWishlistService,
   removeFromWishlistByVariantService,
   clearWishlistService,
-} from "./wishlist.service";
+} from "./cart.service";
 
 export const getWishlistController = async (req: Request, res: Response) => {
   const userId = req?.user?.userId;
@@ -23,10 +23,7 @@ export const getWishlistController = async (req: Request, res: Response) => {
   );
 };
 
-export const addToWishlistController = async (
-  req: Request,
-  res: Response
-) => {
+export const addToWishlistController = async (req: Request, res: Response) => {
   const userId = req?.user?.userId;
 
   if (!userId) {
@@ -84,10 +81,7 @@ export const removeFromWishlistByVariantController = async (
   );
 };
 
-export const clearWishlistController = async (
-  req: Request,
-  res: Response
-) => {
+export const clearWishlistController = async (req: Request, res: Response) => {
   const userId = req?.user?.userId;
 
   if (!userId) {
@@ -96,7 +90,5 @@ export const clearWishlistController = async (
 
   await clearWishlistService(userId);
 
-  return res.send(
-    new ApiResponse(200, [], "Wishlist cleared successfully")
-  );
+  return res.send(new ApiResponse(200, [], "Wishlist cleared successfully"));
 };

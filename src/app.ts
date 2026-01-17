@@ -15,7 +15,7 @@ import userCategoryRoutes from "./modules/user/catalog/category/category.route.j
 import userProductRoutes from "./modules/user/catalog/product/product.route.js";
 import userAddressRoutes from "./modules/user/address/address.route.js";
 import userCartRoutes from "./modules/user/cart/cart.route.js";
-import userWishlistRoutes from "./modules/user/wishlist/wishlist.route.js";
+import userWishlistRoutes from "./modules/user/cart/wishlist.route.js";
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
 import adminUserRoutes from "./modules/admin/users/user.route.js";
 import adminAddressRoutes from "./modules/admin/addresses/address.route.js";

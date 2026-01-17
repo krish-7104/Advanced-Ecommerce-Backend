@@ -1,4 +1,4 @@
-import { Prisma } from "../../../generated/prisma";
+import { Prisma } from "../../../../generated/prisma/browser";
 import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
 import { GetAllUsersQueryParams } from "./user.types";

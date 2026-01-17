@@ -13,7 +13,11 @@ const router = express.Router();
 router.get("/", authMiddleware, getWishlistController);
 router.post("/", authMiddleware, addToWishlistController);
 router.delete("/:id", authMiddleware, removeFromWishlistController);
-router.delete("/variant/:variantId", authMiddleware, removeFromWishlistByVariantController);
+router.delete(
+  "/variant/:variantId",
+  authMiddleware,
+  removeFromWishlistByVariantController
+);
 router.delete("/", authMiddleware, clearWishlistController);
 
 export default router;
