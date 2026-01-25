@@ -1,30 +1,21 @@
 import multer from "multer";
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../cloudinary.config";
 
 export const upload = (type: string) => {
-  const uploadPath = `media/${type}`;
-
-  if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
-  }
+  const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (_req, _file) => {
+      return {
+        folder: `ecommercely/${type}`,
+        allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+        transformation: [{ width: 1200, height: 1200, crop: "limit" }],
+      };
+    },
+  });
 
   return multer({
-    storage: multer.diskStorage({
-      destination: (_req, _file, cb) => {
-        cb(null, uploadPath);
-      },
-      filename: (_req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const name = path
-          .basename(file.originalname, ext)
-          .replace(/\s+/g, "-")
-          .toLowerCase();
-
-        cb(null, `${name}-${crypto.randomBytes(16).toString("hex")}${ext}`);
-      },
-    }),
+    storage: storage,
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB
     },
