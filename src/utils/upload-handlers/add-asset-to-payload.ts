@@ -4,7 +4,7 @@ import { prisma } from "../prisma";
 export const addAssetToPayload = async (
   ownerId: string,
   ownerType: AssetOwner,
-  onlyPrimary: boolean = false
+  onlyPrimary: boolean = false,
 ) => {
   let whereCondition = {};
   if (onlyPrimary) {
@@ -30,7 +30,7 @@ export const addAssetToPayload = async (
         id: asset.id,
         fileName: asset.fileName,
         isPrimary: asset.isPrimary,
-        url: `${process.env.MEDIA_URL}/${asset.path}`,
+        url: asset.path,
       };
     }),
   };
