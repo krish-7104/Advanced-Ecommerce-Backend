@@ -31,6 +31,77 @@ export const getProductByIdService = async (id: string) => {
   }
 };
 
+export const getProductBySlugService = async (slug: string) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+          },
+        },
+        variants: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            sku: true,
+            price: true,
+            mrp: true,
+            stockAvailable: true,
+            isDefault: true,
+            attributes: true,
+            createdAt: true,
+          },
+          orderBy: [
+            { isDefault: "desc" },
+            { createdAt: "desc" },
+          ],
+        },
+      },
+    });
+
+    if (!product) {
+      throw new ApiError(404, "Product not found!");
+    }
+
+    // Fetch images for all variants
+    const variantImages = await Promise.all(
+      product.variants.map((variant) =>
+        addAssetToPayload(variant.id, AssetOwner.PRODUCT_IMAGE, false)
+      )
+    );
+
+    // Map variants with images and discount info
+    const variantsWithDetails = product.variants.map((variant, index) => {
+      const price = Number(variant.price);
+      const mrp = variant.mrp ? Number(variant.mrp) : null;
+      const hasDiscount = mrp !== null && mrp > price;
+
+      return {
+        ...variant,
+        hasDiscount,
+        discountPercentage: hasDiscount
+          ? Math.round(((mrp! - price) / mrp!) * 100)
+          : null,
+        images: variantImages[index]?.images ?? [],
+        image: variantImages[index]?.images?.[0] ?? null,
+      };
+    });
+
+    return {
+      ...product,
+      variants: variantsWithDetails,
+    };
+  } catch (error: any) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, error?.message || "Something went wrong");
+  }
+};
+
 export const getAllProductsService = async ({
   page,
   limit,

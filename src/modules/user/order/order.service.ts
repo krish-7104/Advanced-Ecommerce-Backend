@@ -1,0 +1,441 @@
+import ApiError from "../../../utils/ApiError";
+import { prisma } from "../../../utils/prisma";
+import { OrderStatus, CartItemStatus } from "../../../../generated/prisma/enums";
+import { CreateOrderPayload, UpdateOrderStatusPayload, OrderQueryParams } from "./order.types";
+
+export const createOrderService = async (
+  payload: CreateOrderPayload,
+  userId: string
+) => {
+  const { addressId } = payload;
+
+  // Verify address belongs to user
+  const address = await prisma.address.findFirst({
+    where: {
+      id: addressId,
+      userId: userId,
+    },
+  });
+
+  if (!address) {
+    throw new ApiError(404, "Address not found or does not belong to user");
+  }
+
+  // Get active cart items
+  const cartItems = await prisma.cartItem.findMany({
+    where: {
+      userId: userId,
+      status: CartItemStatus.ACTIVE,
+    },
+    include: {
+      variant: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+
+  if (cartItems.length === 0) {
+    throw new ApiError(400, "Cart is empty. Cannot create order.");
+  }
+
+  // Validate stock availability and calculate total
+  let totalAmount = 0;
+  const orderItemsData: Array<{
+    variantId: string;
+    sku: string;
+    name: string;
+    attributes: any;
+    price: any;
+    mrp: any;
+    quantity: number;
+  }> = [];
+
+  for (const cartItem of cartItems) {
+    const variant = cartItem.variant;
+
+    // Check stock availability
+    if (variant.stockAvailable < cartItem.quantity) {
+      throw new ApiError(
+        400,
+        `Insufficient stock for ${variant.product.name}.`
+      );
+    }
+
+    // Calculate item total (use price, not MRP)
+    const itemTotal = Number(variant.price) * cartItem.quantity;
+    totalAmount += itemTotal;
+
+    // Prepare order item data (snapshot variant data)
+    orderItemsData.push({
+      variantId: variant.id,
+      sku: variant.sku,
+      name: variant.product.name,
+      attributes: variant.attributes,
+      price: variant.price,
+      mrp: variant.mrp,
+      quantity: cartItem.quantity,
+    });
+  }
+
+  // Create order with order items in a transaction
+  const order = await prisma.$transaction(async (tx) => {
+    // Create the order
+    const newOrder = await tx.order.create({
+      data: {
+        userId: userId,
+        addressId: addressId,
+        status: OrderStatus.PENDING,
+        totalAmount: totalAmount,
+        items: {
+          create: orderItemsData,
+        },
+      },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+        address: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Update stock for each variant
+    for (const cartItem of cartItems) {
+      await tx.productVariant.update({
+        where: { id: cartItem.variantId },
+        data: {
+          stockAvailable: {
+            decrement: cartItem.quantity,
+          },
+          stockSold: {
+            increment: cartItem.quantity,
+          },
+        },
+      });
+    }
+
+    // Clear the cart
+    await tx.cartItem.deleteMany({
+      where: {
+        userId: userId,
+        status: CartItemStatus.ACTIVE,
+      },
+    });
+
+    return newOrder;
+  });
+
+  return order;
+};
+
+export const getUserOrdersService = async (
+  userId: string,
+  queryParams: OrderQueryParams
+) => {
+  const { page = 1, limit = 10, status } = queryParams;
+  const skip = (page - 1) * limit;
+
+  const where: any = {
+    userId: userId,
+  };
+
+  if (status) {
+    where.status = status;
+  }
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+        address: true,
+      },
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return {
+    orders,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export const getOrderByIdService = async (orderId: string, userId: string) => {
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      userId: userId,
+    },
+    include: {
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+      address: true,
+      payments: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  return order;
+};
+
+export const getOrderByIdAdminService = async (orderId: string) => {
+  const order = await prisma.order.findUnique({
+    where: {
+      id: orderId,
+    },
+    include: {
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+      address: true,
+      payments: true,
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phoneNumber: true,
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  return order;
+};
+
+
+export const cancelOrderService = async (orderId: string, userId: string) => {
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      userId: userId,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  // Only allow cancellation for PENDING or PAID orders
+  const cancellableStatuses: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.PAID];
+  if (!cancellableStatuses.includes(order.status)) {
+    throw new ApiError(
+      400,
+      `Cannot cancel order with status ${order.status}. Only PENDING or PAID orders can be cancelled.`
+    );
+  }
+
+  // Update order status and restore stock in a transaction
+  const updatedOrder = await prisma.$transaction(async (tx) => {
+    // Update order status
+    const updated = await tx.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.CANCELLED,
+      },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+        address: true,
+      },
+    });
+
+    // Restore stock for each order item
+    for (const item of order.items) {
+      await tx.productVariant.update({
+        where: { id: item.variantId },
+        data: {
+          stockAvailable: {
+            increment: item.quantity,
+          },
+          stockSold: {
+            decrement: item.quantity,
+          },
+        },
+      });
+    }
+
+    return updated;
+  });
+
+  return updatedOrder;
+};
+
+export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
+  const { page = 1, limit = 10, status } = queryParams;
+  const skip = (page - 1) * limit;
+
+  const where: any = {};
+
+  if (status) {
+    where.status = status;
+  }
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+        address: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+      },
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return {
+    orders,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export const updateOrderStatusService = async (
+  orderId: string,
+  payload: UpdateOrderStatusPayload
+) => {
+  const { status } = payload;
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  // Validate status transitions
+  const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+    [OrderStatus.PENDING]: [OrderStatus.PAID, OrderStatus.CANCELLED],
+    [OrderStatus.PAID]: [OrderStatus.PACKED, OrderStatus.CANCELLED],
+    [OrderStatus.PACKED]: [OrderStatus.SHIPPED],
+    [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
+    [OrderStatus.DELIVERED]: [OrderStatus.REFUNDED],
+    [OrderStatus.CANCELLED]: [],
+    [OrderStatus.REFUNDED]: [],
+  };
+
+  if (!validTransitions[order.status].includes(status)) {
+    throw new ApiError(
+      400,
+      `Invalid status transition from ${order.status} to ${status}`
+    );
+  }
+
+  const updatedOrder = await prisma.order.update({
+    where: { id: orderId },
+    data: { status },
+    include: {
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
+      address: true,
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phoneNumber: true,
+        },
+      },
+    },
+  });
+
+  return updatedOrder;
+};

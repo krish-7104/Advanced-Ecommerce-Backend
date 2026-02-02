@@ -3,6 +3,7 @@ import ApiError from "../../../../utils/ApiError";
 import {
   getAllProductsService,
   getProductByIdService,
+  getProductBySlugService,
 } from "./product.service";
 import ApiResponse from "../../../../utils/ApiResponse";
 import { GetAllProductsQueryParams } from "./product.types";
@@ -37,3 +38,13 @@ export const getProductByIdController = async (req: Request, res: Response) => {
   const Product = await getProductByIdService(id);
   res.send(new ApiResponse(200, Product, "Product get successfully!"));
 };
+
+export const getProductBySlugController = async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  if (!slug) {
+    throw new ApiError(400, "Product slug is required!");
+  }
+  const product = await getProductBySlugService(slug);
+  res.send(new ApiResponse(200, product, "Product retrieved successfully!"));
+};
+

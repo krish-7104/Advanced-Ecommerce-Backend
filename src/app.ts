@@ -19,6 +19,8 @@ import userWishlistRoutes from "./modules/user/cart/wishlist.route.js";
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
 import adminUserRoutes from "./modules/admin/users/user.route.js";
 import adminAddressRoutes from "./modules/admin/addresses/address.route.js";
+import userOrderRoutes from "./modules/user/order/order.route.js";
+import adminOrderRoutes from "./modules/admin/order/order.route.js";
 
 const app = express();
 app.use(express.json());
@@ -47,6 +49,7 @@ app.use("/api/v1/users/product", userProductRoutes);
 app.use("/api/v1/users/address", userAddressRoutes);
 app.use("/api/v1/users/cart", userCartRoutes);
 app.use("/api/v1/users/wishlist", userWishlistRoutes);
+app.use("/api/v1/users/order", userOrderRoutes);
 
 // Admin
 app.use("/api/v1/admin/category", categoryRoutes);
@@ -57,6 +60,7 @@ app.use("/api/v1/admin/auth", adminAuthRoutes);
 app.use("/api/v1/admin/roles", roleRoutes);
 app.use("/api/v1/admin/users", adminUserRoutes);
 app.use("/api/v1/admin/addresses", adminAddressRoutes);
+app.use("/api/v1/admin/order", adminOrderRoutes);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof ApiError) {
