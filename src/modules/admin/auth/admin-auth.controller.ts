@@ -24,8 +24,8 @@ export const registerAdminController = async (req: Request, res: Response) => {
     req.body
   );
 
-  res.cookie("access_token", accessToken, ACCESS_COOKIE_OPTIONS);
-  res.cookie("refresh_token", refreshToken, REFRESH_COOKIE_OPTIONS);
+  res.cookie("admin_access_token", accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie("admin_refresh_token", refreshToken, REFRESH_COOKIE_OPTIONS);
 
   return res.send(new ApiResponse(201, admin, "Admin registered successfully"));
 };
@@ -41,19 +41,19 @@ export const loginAdminController = async (req: Request, res: Response) => {
     req.body
   );
 
-  res.cookie("access_token", accessToken, ACCESS_COOKIE_OPTIONS);
-  res.cookie("refresh_token", refreshToken, REFRESH_COOKIE_OPTIONS);
+  res.cookie("admin_access_token", accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie("admin_refresh_token", refreshToken, REFRESH_COOKIE_OPTIONS);
 
   return res.send(new ApiResponse(200, admin, "Logged in successfully"));
 };
 
 export const logoutAdminController = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies?.refresh_token;
+  const refreshToken = req.cookies?.admin_refresh_token;
 
   await logoutAdminService(refreshToken);
 
-  res.clearCookie("access_token", ACCESS_COOKIE_OPTIONS);
-  res.clearCookie("refresh_token", REFRESH_COOKIE_OPTIONS);
+  res.clearCookie("admin_access_token", ACCESS_COOKIE_OPTIONS);
+  res.clearCookie("admin_refresh_token", REFRESH_COOKIE_OPTIONS);
 
   return res.send(new ApiResponse(200, [], "Logged out successfully"));
 };
@@ -74,13 +74,13 @@ export const refreshAdminTokenController = async (
   req: Request,
   res: Response
 ) => {
-  const refreshToken = req.cookies?.refresh_token;
+  const refreshToken = req.cookies?.admin_refresh_token;
 
   const { accessToken, refreshToken: newRefreshToken } =
     await refreshAdminTokenService(refreshToken);
 
-  res.cookie("access_token", accessToken, ACCESS_COOKIE_OPTIONS);
-  res.cookie("refresh_token", newRefreshToken, REFRESH_COOKIE_OPTIONS);
+  res.cookie("admin_access_token", accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie("admin_refresh_token", newRefreshToken, REFRESH_COOKIE_OPTIONS);
 
   return res.send(new ApiResponse(200, [], "Session refreshed"));
 };

@@ -11,7 +11,7 @@ export const createProductVariantService = async (
   payload: ProductVariantModel,
   productId: string,
   images: Express.Multer.File[],
-  coverImageIndex: number
+  coverImageIndex: number,
 ) => {
   try {
     const { sku, mrp, attributes, isActive, price, stockAvailable, isDefault } =
@@ -27,7 +27,7 @@ export const createProductVariantService = async (
       if (checkSKU) {
         throw new ApiError(
           400,
-          "SKU with this Product Variant already exists!"
+          "SKU with this Product Variant already exists!",
         );
       }
     }
@@ -40,6 +40,36 @@ export const createProductVariantService = async (
 
     if (!productFoundCheck) {
       throw new ApiError(404, "Product not found!");
+    }
+
+    // Validate attributes against schema
+    const schema = productFoundCheck.attributesSchema as Record<
+      string,
+      string[]
+    > | null;
+    if (schema && attributes) {
+      for (const [key, value] of Object.entries(attributes)) {
+        if (!schema[key]) {
+          throw new ApiError(
+            400,
+            `Attribute '${key}' is not defined in product schema`,
+          );
+        }
+        if (!schema[key].includes(value as string)) {
+          throw new ApiError(
+            400,
+            `Value '${value}' for attribute '${key}' is not valid`,
+          );
+        }
+      }
+      // Ensure all schema keys are present
+      for (const key of Object.keys(schema)) {
+        if (!(attributes as Record<string, any>)[key]) {
+          throw new ApiError(400, `Missing required attribute '${key}'`);
+        }
+      }
+    } else if (schema && !attributes) {
+      throw new ApiError(400, "Attributes are required for this product");
     }
 
     const Product = await prisma.productVariant.create({
@@ -62,12 +92,18 @@ export const createProductVariantService = async (
           Product.id,
           AssetOwner.PRODUCT_IMAGE,
           index,
-          index === coverImageIndex ? true : false
-        )
-      )
+          index === coverImageIndex ? true : false,
+        ),
+      ),
     );
 
-    return Product;
+    return {
+      ...Product,
+      attributes:
+        typeof Product.attributes === "string"
+          ? JSON.parse(Product.attributes)
+          : Product.attributes || {},
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -101,12 +137,16 @@ export const getAllProductVariantsService = async () => {
 
     const payload = await Promise.all(
       productVariants.map((variant: any) =>
-        addAssetToPayload(variant.id, AssetOwner.PRODUCT_IMAGE, true)
-      )
+        addAssetToPayload(variant.id, AssetOwner.PRODUCT_IMAGE, true),
+      ),
     );
 
     return productVariants.map((variant: any, index: number) => ({
       ...variant,
+      attributes:
+        typeof variant.attributes === "string"
+          ? JSON.parse(variant.attributes)
+          : variant.attributes || {},
       ...payload[index],
     }));
   } catch (error: any) {
@@ -140,9 +180,16 @@ export const getProductVariantByIdService = async (id: string) => {
 
     const payload = await addAssetToPayload(
       productVariant?.id || "",
-      AssetOwner.PRODUCT_IMAGE
+      AssetOwner.PRODUCT_IMAGE,
     );
-    return { ...productVariant, ...payload };
+    return {
+      ...productVariant,
+      attributes:
+        typeof productVariant?.attributes === "string"
+          ? JSON.parse(productVariant.attributes)
+          : productVariant?.attributes || {},
+      ...payload,
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -222,8 +269,8 @@ export const updateProductVariantService = async ({
           tx.asset.update({
             where: { id: img.id },
             data: { order: img.order },
-          })
-        )
+          }),
+        ),
       );
     }
 
@@ -246,9 +293,9 @@ export const updateProductVariantService = async ({
             variantId,
             AssetOwner.PRODUCT_IMAGE,
             newImageOrder?.[index] ?? 0,
-            coverImageId ? false : index === coverImageIndex
-          )
-        )
+            coverImageId ? false : index === coverImageIndex,
+          ),
+        ),
       );
     }
 
@@ -306,6 +353,10 @@ export const updateProductVariantService = async ({
 
     return {
       ...updatedVariant,
+      attributes:
+        typeof updatedVariant.attributes === "string"
+          ? JSON.parse(updatedVariant.attributes)
+          : updatedVariant.attributes || {},
       images: assets,
     };
   });
@@ -328,7 +379,7 @@ export const deleteProductVariantService = async (id: string) => {
     if (variant.isDefault && variantCount === 1) {
       throw new ApiError(
         400,
-        "Cannot delete the only default variant of a product"
+        "Cannot delete the only default variant of a product",
       );
     }
 

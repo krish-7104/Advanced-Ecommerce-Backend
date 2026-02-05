@@ -1,6 +1,5 @@
 import express from "express";
-import { limitToAdmin } from "../../../../middlewares/limit-to-admin.middleware.js";
-import { authMiddleware } from "../../../../middlewares/auth.middleware.js";
+import { adminAuthMiddleware } from "../../../../middlewares/admin-auth.middleware.js";
 import {
   createCategoryController,
   getAllCategoriesController,
@@ -13,24 +12,22 @@ import { parseFormData } from "../../../../middlewares/parse-formdata.middleware
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getAllCategoriesController);
+router.get("/", adminAuthMiddleware, getAllCategoriesController);
 router.post(
   "",
-  authMiddleware,
-  limitToAdmin,
+  adminAuthMiddleware,
   upload("category").single("image"),
   parseFormData,
   createCategoryController
 );
-router.get("/:id", authMiddleware, getCategoryByIdController);
+router.get("/:id", adminAuthMiddleware, getCategoryByIdController);
 router.patch(
   "/:id",
-  authMiddleware,
-  limitToAdmin,
+  adminAuthMiddleware,
   upload("category").single("image"),
   parseFormData,
   updateCategoryController
 );
-router.delete("/:id", authMiddleware, limitToAdmin, deleteCategoryController);
+router.delete("/:id", adminAuthMiddleware, deleteCategoryController);
 
 export default router;

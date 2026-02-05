@@ -2,6 +2,7 @@ import { PrismaClient } from "../../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
 import { seedAdmin } from "./admin.seed";
+import { seedProducts } from "./product.seed";
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const adapter = new PrismaPg({ connectionString });
@@ -13,6 +14,8 @@ async function main() {
   try {
     // Seed admin only
     await seedAdmin();
+    // Seed products and categories
+    await seedProducts();
 
     console.log("🎉 All seeding completed successfully!");
   } catch (error) {
@@ -23,8 +26,7 @@ async function main() {
   }
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

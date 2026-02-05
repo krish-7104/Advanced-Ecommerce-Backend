@@ -34,6 +34,29 @@ export const createProductSerice = async (payload: ProductModel) => {
       newSlug = name.replaceAll(" ", "-").toLowerCase();
     }
 
+    if (attributesSchema) {
+      if (
+        typeof attributesSchema !== "object" ||
+        Array.isArray(attributesSchema)
+      ) {
+        throw new ApiError(400, "Attributes schema must be an object");
+      }
+      for (const [key, values] of Object.entries(attributesSchema)) {
+        if (!Array.isArray(values)) {
+          throw new ApiError(
+            400,
+            `Attributes schema values for key '${key}' must be an array of strings`,
+          );
+        }
+        if (values.some((v: any) => typeof v !== "string")) {
+          throw new ApiError(
+            400,
+            `Attributes schema values for key '${key}' must be strings`,
+          );
+        }
+      }
+    }
+
     const Product = await prisma.product.create({
       data: {
         name,
@@ -44,7 +67,13 @@ export const createProductSerice = async (payload: ProductModel) => {
         isFeatured,
       },
     });
-    return Product;
+    return {
+      ...Product,
+      attributesSchema:
+        typeof Product.attributesSchema === "string"
+          ? JSON.parse(Product.attributesSchema)
+          : Product.attributesSchema || {},
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -69,7 +98,13 @@ export const getProductByIdService = async (id: string) => {
       throw new ApiError(404, "Product not found!");
     }
 
-    return Product;
+    return {
+      ...Product,
+      attributesSchema:
+        typeof Product.attributesSchema === "string"
+          ? JSON.parse(Product.attributesSchema)
+          : Product.attributesSchema || {},
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -78,7 +113,7 @@ export const getProductByIdService = async (id: string) => {
 
 export const updateProductService = async (
   id: string,
-  payload: ProductModel
+  payload: ProductModel,
 ) => {
   try {
     if (payload.isActive === true) {
@@ -90,7 +125,7 @@ export const updateProductService = async (
       if (variants.length === 0) {
         throw new ApiError(
           400,
-          "Product must have at least one variant to be active"
+          "Product must have at least one variant to be active",
         );
       }
     }
@@ -99,7 +134,13 @@ export const updateProductService = async (
       where: { id },
       data: { ...payload, attributesSchema: payload.attributesSchema || {} },
     });
-    return Product;
+    return {
+      ...Product,
+      attributesSchema:
+        typeof Product.attributesSchema === "string"
+          ? JSON.parse(Product.attributesSchema)
+          : Product.attributesSchema || {},
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -137,7 +178,7 @@ export const deleteProductService = async (id: string) => {
 };
 
 export const getAllProductsService = async (
-  queryParams: GetAllProductsQueryParams
+  queryParams: GetAllProductsQueryParams,
 ) => {
   const { categoryId, hasVariants, isActive, isFeatured } = queryParams;
   try {
@@ -190,15 +231,19 @@ export const getAllProductsService = async (
           return addAssetToPayload(
             product.variants?.[0]?.id || "",
             AssetOwner.PRODUCT_IMAGE,
-            true
+            true,
           );
         }
         return null;
-      })
+      }),
     );
 
     return Products.map((product: any, index: number) => ({
       ...product,
+      attributesSchema:
+        typeof product.attributesSchema === "string"
+          ? JSON.parse(product.attributesSchema)
+          : product.attributesSchema || {},
       ...payload[index],
     }));
   } catch (error: any) {

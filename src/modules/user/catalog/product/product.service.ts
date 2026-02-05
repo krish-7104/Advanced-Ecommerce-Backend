@@ -24,7 +24,13 @@ export const getProductByIdService = async (id: string) => {
       throw new ApiError(404, "Product not found!");
     }
 
-    return Product;
+    return {
+      ...Product,
+      attributesSchema:
+        typeof Product.attributesSchema === "string"
+          ? JSON.parse(Product.attributesSchema)
+          : Product.attributesSchema || {},
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -56,10 +62,7 @@ export const getProductBySlugService = async (slug: string) => {
             attributes: true,
             createdAt: true,
           },
-          orderBy: [
-            { isDefault: "desc" },
-            { createdAt: "desc" },
-          ],
+          orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
         },
       },
     });
@@ -71,8 +74,8 @@ export const getProductBySlugService = async (slug: string) => {
     // Fetch images for all variants
     const variantImages = await Promise.all(
       product.variants.map((variant) =>
-        addAssetToPayload(variant.id, AssetOwner.PRODUCT_IMAGE, false)
-      )
+        addAssetToPayload(variant.id, AssetOwner.PRODUCT_IMAGE, false),
+      ),
     );
 
     // Map variants with images and discount info
@@ -83,6 +86,10 @@ export const getProductBySlugService = async (slug: string) => {
 
       return {
         ...variant,
+        attributes:
+          typeof variant.attributes === "string"
+            ? JSON.parse(variant.attributes)
+            : variant.attributes || {},
         hasDiscount,
         discountPercentage: hasDiscount
           ? Math.round(((mrp! - price) / mrp!) * 100)
@@ -94,6 +101,10 @@ export const getProductBySlugService = async (slug: string) => {
 
     return {
       ...product,
+      attributesSchema:
+        typeof product.attributesSchema === "string"
+          ? JSON.parse(product.attributesSchema)
+          : product.attributesSchema || {},
       variants: variantsWithDetails,
     };
   } catch (error: any) {
@@ -197,8 +208,8 @@ export const getAllProductsService = async ({
 
     const images = await Promise.all(
       products.map((p) =>
-        addAssetToPayload(p.id, AssetOwner.PRODUCT_IMAGE, true)
-      )
+        addAssetToPayload(p.id, AssetOwner.PRODUCT_IMAGE, true),
+      ),
     );
 
     const data = products.map((product, index) => {

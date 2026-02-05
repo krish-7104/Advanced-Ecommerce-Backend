@@ -1,11 +1,18 @@
 import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
-import { OrderStatus, CartItemStatus } from "../../../../generated/prisma/enums";
-import { CreateOrderPayload, UpdateOrderStatusPayload, OrderQueryParams } from "./order.types";
+import {
+  OrderStatus,
+  CartItemStatus,
+} from "../../../../generated/prisma/enums";
+import {
+  CreateOrderPayload,
+  UpdateOrderStatusPayload,
+  OrderQueryParams,
+} from "./order.types";
 
 export const createOrderService = async (
   payload: CreateOrderPayload,
-  userId: string
+  userId: string,
 ) => {
   const { addressId } = payload;
 
@@ -59,7 +66,7 @@ export const createOrderService = async (
     if (variant.stockAvailable < cartItem.quantity) {
       throw new ApiError(
         400,
-        `Insufficient stock for ${variant.product.name}.`
+        `Insufficient stock for ${variant.product.name}.`,
       );
     }
 
@@ -145,7 +152,7 @@ export const createOrderService = async (
 
 export const getUserOrdersService = async (
   userId: string,
-  queryParams: OrderQueryParams
+  queryParams: OrderQueryParams,
 ) => {
   const { page = 1, limit = 10, status } = queryParams;
   const skip = (page - 1) * limit;
@@ -171,7 +178,11 @@ export const getUserOrdersService = async (
           include: {
             variant: {
               include: {
-                product: true,
+                product: {
+                  select: {
+                    id: true,
+                  },
+                },
               },
             },
           },
@@ -182,8 +193,26 @@ export const getUserOrdersService = async (
     prisma.order.count({ where }),
   ]);
 
+  const formattedOrders = orders.map((order) => {
+    return {
+      ...order,
+      items: order.items.map((item) => {
+        return {
+          ...item,
+          attributes:
+            typeof item.attributes === "string"
+              ? (JSON.parse(item.attributes as string) as Record<
+                  string,
+                  string
+                >)
+              : (item.attributes as Record<string, string>) || {},
+        };
+      }),
+    };
+  });
+
   return {
-    orders,
+    orders: formattedOrders,
     pagination: {
       total,
       page,
@@ -200,15 +229,7 @@ export const getOrderByIdService = async (orderId: string, userId: string) => {
       userId: userId,
     },
     include: {
-      items: {
-        include: {
-          variant: {
-            include: {
-              product: true,
-            },
-          },
-        },
-      },
+      items: true,
       address: true,
       payments: true,
     },
@@ -218,7 +239,17 @@ export const getOrderByIdService = async (orderId: string, userId: string) => {
     throw new ApiError(404, "Order not found");
   }
 
-  return order;
+  const formattedItems = order?.items.map((item) => {
+    return {
+      ...item,
+      attributes:
+        typeof item.attributes === "string"
+          ? JSON.parse(item.attributes)
+          : item.attributes || {},
+    };
+  });
+
+  return { ...order, items: formattedItems };
 };
 
 export const getOrderByIdAdminService = async (orderId: string) => {
@@ -227,15 +258,7 @@ export const getOrderByIdAdminService = async (orderId: string) => {
       id: orderId,
     },
     include: {
-      items: {
-        include: {
-          variant: {
-            include: {
-              product: true,
-            },
-          },
-        },
-      },
+      items: true,
       address: true,
       payments: true,
       user: {
@@ -250,13 +273,22 @@ export const getOrderByIdAdminService = async (orderId: string) => {
     },
   });
 
+  const formattedItems = order?.items.map((item) => {
+    return {
+      ...item,
+      attributes:
+        typeof item.attributes === "string"
+          ? JSON.parse(item.attributes)
+          : item.attributes || {},
+    };
+  });
+
   if (!order) {
     throw new ApiError(404, "Order not found");
   }
 
-  return order;
+  return { ...order, items: formattedItems };
 };
-
 
 export const cancelOrderService = async (orderId: string, userId: string) => {
   const order = await prisma.order.findFirst({
@@ -274,11 +306,14 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
   }
 
   // Only allow cancellation for PENDING or PAID orders
-  const cancellableStatuses: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.PAID];
+  const cancellableStatuses: OrderStatus[] = [
+    OrderStatus.PENDING,
+    OrderStatus.PAID,
+  ];
   if (!cancellableStatuses.includes(order.status)) {
     throw new ApiError(
       400,
-      `Cannot cancel order with status ${order.status}. Only PENDING or PAID orders can be cancelled.`
+      `Cannot cancel order with status ${order.status}. Only PENDING or PAID orders can be cancelled.`,
     );
   }
 
@@ -291,15 +326,7 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
         status: OrderStatus.CANCELLED,
       },
       include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: true,
-              },
-            },
-          },
-        },
+        items: true,
         address: true,
       },
     });
@@ -322,7 +349,17 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
     return updated;
   });
 
-  return updatedOrder;
+  const formattedItems = updatedOrder?.items.map((item) => {
+    return {
+      ...item,
+      attributes:
+        typeof item.attributes === "string"
+          ? JSON.parse(item.attributes)
+          : item.attributes || {},
+    };
+  });
+
+  return { ...updatedOrder, items: formattedItems };
 };
 
 export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
@@ -344,15 +381,7 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
         createdAt: "desc",
       },
       include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: true,
-              },
-            },
-          },
-        },
+        items: true,
         address: true,
         user: {
           select: {
@@ -368,8 +397,23 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
     prisma.order.count({ where }),
   ]);
 
+  const formattedOrders = orders.map((order) => {
+    return {
+      ...order,
+      items: order.items.map((item) => {
+        return {
+          ...item,
+          attributes:
+            typeof item.attributes === "string"
+              ? JSON.parse(item.attributes)
+              : item.attributes || {},
+        };
+      }),
+    };
+  });
+
   return {
-    orders,
+    orders: formattedOrders,
     pagination: {
       total,
       page,
@@ -381,7 +425,7 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
 
 export const updateOrderStatusService = async (
   orderId: string,
-  payload: UpdateOrderStatusPayload
+  payload: UpdateOrderStatusPayload,
 ) => {
   const { status } = payload;
 
@@ -407,7 +451,7 @@ export const updateOrderStatusService = async (
   if (!validTransitions[order.status].includes(status)) {
     throw new ApiError(
       400,
-      `Invalid status transition from ${order.status} to ${status}`
+      `Invalid status transition from ${order.status} to ${status}`,
     );
   }
 

@@ -1,6 +1,5 @@
 import express from "express";
-import { authMiddleware } from "../../../middlewares/auth.middleware.js";
-import { limitToAdmin } from "../../../middlewares/limit-to-admin.middleware.js";
+import { adminAuthMiddleware } from "../../../middlewares/admin-auth.middleware.js";
 import {
   getAllOrdersController,
   getOrderByIdController,
@@ -9,12 +8,11 @@ import {
 
 const router = express.Router();
 
-router.get("/", authMiddleware, limitToAdmin, getAllOrdersController);
-router.get("/:id", authMiddleware, limitToAdmin, getOrderByIdController);
+router.get("/", adminAuthMiddleware, getAllOrdersController);
+router.get("/:id", adminAuthMiddleware, getOrderByIdController);
 router.patch(
   "/:id/status",
-  authMiddleware,
-  limitToAdmin,
+  adminAuthMiddleware,
   updateOrderStatusController
 );
 

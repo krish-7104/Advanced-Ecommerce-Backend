@@ -1,6 +1,5 @@
 import express from "express";
-import { limitToAdmin } from "../../../../middlewares/limit-to-admin.middleware.js";
-import { authMiddleware } from "../../../../middlewares/auth.middleware.js";
+import { adminAuthMiddleware } from "../../../../middlewares/admin-auth.middleware.js";
 import {
   createProductController,
   getProductByIdController,
@@ -11,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getAllProductsController);
-router.post("/", authMiddleware, limitToAdmin, createProductController);
-router.get("/:id", authMiddleware, getProductByIdController);
-router.patch("/:id", authMiddleware, limitToAdmin, updateProductController);
-router.delete("/:id", authMiddleware, limitToAdmin, deleteProductController);
+router.get("/", adminAuthMiddleware, getAllProductsController);
+router.post("/", adminAuthMiddleware, createProductController);
+router.get("/:id", adminAuthMiddleware, getProductByIdController);
+router.patch("/:id", adminAuthMiddleware, updateProductController);
+router.delete("/:id", adminAuthMiddleware, deleteProductController);
 
 export default router;

@@ -6,15 +6,14 @@ import {
   aboutAdminController,
   refreshAdminTokenController,
 } from "./admin-auth.controller.js";
-import { authMiddleware } from "../../../middlewares/auth.middleware.js";
-import { limitToAdmin } from "../../../middlewares/limit-to-admin.middleware.js";
+import { adminAuthMiddleware } from "../../../middlewares/admin-auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/register", authMiddleware, limitToAdmin, registerAdminController);
+router.post("/register", adminAuthMiddleware, registerAdminController);
 router.post("/login", loginAdminController);
-router.get("/about/me", authMiddleware, limitToAdmin, aboutAdminController);
+router.get("/about/me", adminAuthMiddleware, aboutAdminController);
 router.get("/refresh", refreshAdminTokenController);
-router.post("/logout", authMiddleware, limitToAdmin, logoutAdminController);
+router.post("/logout", adminAuthMiddleware, logoutAdminController);
 
 export default router;

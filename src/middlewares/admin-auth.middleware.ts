@@ -2,12 +2,12 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import ApiError from "../utils/ApiError";
 
-export const authMiddleware = (
+export const adminAuthMiddleware = (
   req: Request,
   _res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies?.access_token
+  const token = req.cookies?.admin_access_token
 
   if (!token) {
     return next(new ApiError(401, "Unauthorized"));

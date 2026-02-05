@@ -43,8 +43,8 @@ export const getCartService = async (userId: string) => {
 
     const images = await Promise.all(
       cartItems.map((item) =>
-        addAssetToPayload(item.variant.id, AssetOwner.PRODUCT_IMAGE, true)
-      )
+        addAssetToPayload(item.variant.id, AssetOwner.PRODUCT_IMAGE, true),
+      ),
     );
 
     const data = cartItems.map((item, index) => {
@@ -67,7 +67,10 @@ export const getCartService = async (userId: string) => {
             ? Math.round(((mrp! - price) / mrp!) * 100)
             : null,
           stockAvailable: item.variant.stockAvailable,
-          attributes: item.variant.attributes,
+          attributes:
+            typeof item.variant.attributes === "string"
+              ? JSON.parse(item.variant.attributes)
+              : item.variant.attributes || {},
           product: {
             id: item.variant.product.id,
             name: item.variant.product.name,
@@ -96,7 +99,7 @@ export const getCartService = async (userId: string) => {
 
 export const addToCartService = async (
   payload: AddToCartPayload,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!userId) {
@@ -129,7 +132,7 @@ export const addToCartService = async (
     if (variant.stockAvailable < payload.quantity) {
       throw new ApiError(
         400,
-        `Only ${variant.stockAvailable} items available in stock`
+        `Only ${variant.stockAvailable} items available in stock`,
       );
     }
 
@@ -150,7 +153,7 @@ export const addToCartService = async (
       if (variant.stockAvailable < newQuantity) {
         throw new ApiError(
           400,
-          `Only ${variant.stockAvailable} items available in stock`
+          `Only ${variant.stockAvailable} items available in stock`,
         );
       }
 
@@ -209,7 +212,7 @@ export const addToCartService = async (
     const imageData = await addAssetToPayload(
       cartItem.variant.id,
       AssetOwner.PRODUCT_IMAGE,
-      true
+      true,
     );
 
     const price = Number(cartItem.variant.price);
@@ -231,7 +234,10 @@ export const addToCartService = async (
           ? Math.round(((mrp! - price) / mrp!) * 100)
           : null,
         stockAvailable: cartItem.variant.stockAvailable,
-        attributes: cartItem.variant.attributes,
+        attributes:
+          typeof cartItem.variant.attributes === "string"
+            ? JSON.parse(cartItem.variant.attributes)
+            : cartItem.variant.attributes || {},
         product: {
           id: cartItem.variant.product.id,
           name: cartItem.variant.product.name,
@@ -252,7 +258,7 @@ export const addToCartService = async (
 export const updateCartItemService = async (
   cartItemId: string,
   payload: UpdateCartItemPayload,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!cartItemId) {
@@ -277,7 +283,7 @@ export const updateCartItemService = async (
     if (cartItem.userId !== userId) {
       throw new ApiError(
         403,
-        "You don't have permission to update this cart item"
+        "You don't have permission to update this cart item",
       );
     }
 
@@ -291,7 +297,7 @@ export const updateCartItemService = async (
       if (cartItem.variant.stockAvailable < payload.quantity) {
         throw new ApiError(
           400,
-          `Only ${cartItem.variant.stockAvailable} items available in stock`
+          `Only ${cartItem.variant.stockAvailable} items available in stock`,
         );
       }
 
@@ -327,7 +333,7 @@ export const updateCartItemService = async (
     const imageData = await addAssetToPayload(
       updatedCartItem.variant.id,
       AssetOwner.PRODUCT_IMAGE,
-      true
+      true,
     );
 
     const price = Number(updatedCartItem.variant.price);
@@ -351,7 +357,10 @@ export const updateCartItemService = async (
           ? Math.round(((mrp! - price) / mrp!) * 100)
           : null,
         stockAvailable: updatedCartItem.variant.stockAvailable,
-        attributes: updatedCartItem.variant.attributes,
+        attributes:
+          typeof updatedCartItem.variant.attributes === "string"
+            ? JSON.parse(updatedCartItem.variant.attributes)
+            : updatedCartItem.variant.attributes || {},
         product: {
           id: updatedCartItem.variant.product.id,
           name: updatedCartItem.variant.product.name,
@@ -371,7 +380,7 @@ export const updateCartItemService = async (
 
 export const removeFromCartService = async (
   cartItemId: string,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!cartItemId) {
@@ -393,7 +402,7 @@ export const removeFromCartService = async (
     if (cartItem.userId !== userId) {
       throw new ApiError(
         403,
-        "You don't have permission to remove this cart item"
+        "You don't have permission to remove this cart item",
       );
     }
 
@@ -463,8 +472,8 @@ export const getWishlistService = async (userId: string) => {
 
     const images = await Promise.all(
       wishlistItems.map((item) =>
-        addAssetToPayload(item.variant.id, AssetOwner.PRODUCT_IMAGE, true)
-      )
+        addAssetToPayload(item.variant.id, AssetOwner.PRODUCT_IMAGE, true),
+      ),
     );
 
     const data = wishlistItems.map((item, index) => {
@@ -487,7 +496,10 @@ export const getWishlistService = async (userId: string) => {
             : null,
           stockAvailable: item.variant.stockAvailable,
           isActive: item.variant.isActive,
-          attributes: item.variant.attributes,
+          attributes:
+            typeof item.variant.attributes === "string"
+              ? JSON.parse(item.variant.attributes)
+              : item.variant.attributes || {},
           product: {
             id: item.variant.product.id,
             name: item.variant.product.name,
@@ -512,7 +524,7 @@ export const getWishlistService = async (userId: string) => {
 
 export const addToWishlistService = async (
   payload: AddToWishlistPayload,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!userId) {
@@ -576,7 +588,7 @@ export const addToWishlistService = async (
       const imageData = await addAssetToPayload(
         wishlistItem.variant.id,
         AssetOwner.PRODUCT_IMAGE,
-        true
+        true,
       );
 
       const price = Number(wishlistItem.variant.price);
@@ -600,7 +612,10 @@ export const addToWishlistService = async (
             : null,
           stockAvailable: wishlistItem.variant.stockAvailable,
           isActive: wishlistItem.variant.isActive,
-          attributes: wishlistItem.variant.attributes,
+          attributes:
+            typeof wishlistItem.variant.attributes === "string"
+              ? JSON.parse(wishlistItem.variant.attributes)
+              : wishlistItem.variant.attributes || {},
           product: {
             id: wishlistItem.variant.product.id,
             name: wishlistItem.variant.product.name,
@@ -642,7 +657,7 @@ export const addToWishlistService = async (
     const imageData = await addAssetToPayload(
       wishlistItem.variant.id,
       AssetOwner.PRODUCT_IMAGE,
-      true
+      true,
     );
 
     const price = Number(wishlistItem.variant.price);
@@ -666,7 +681,10 @@ export const addToWishlistService = async (
           : null,
         stockAvailable: wishlistItem.variant.stockAvailable,
         isActive: wishlistItem.variant.isActive,
-        attributes: wishlistItem.variant.attributes,
+        attributes:
+          typeof wishlistItem.variant.attributes === "string"
+            ? JSON.parse(wishlistItem.variant.attributes)
+            : wishlistItem.variant.attributes || {},
         product: {
           id: wishlistItem.variant.product.id,
           name: wishlistItem.variant.product.name,
@@ -685,7 +703,7 @@ export const addToWishlistService = async (
 
 export const removeFromWishlistService = async (
   wishlistItemId: string,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!wishlistItemId) {
@@ -707,7 +725,7 @@ export const removeFromWishlistService = async (
     if (wishlistItem.userId !== userId) {
       throw new ApiError(
         403,
-        "You don't have permission to remove this wishlist item"
+        "You don't have permission to remove this wishlist item",
       );
     }
 
@@ -728,7 +746,7 @@ export const removeFromWishlistService = async (
 
 export const removeFromWishlistByVariantService = async (
   variantId: string,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!variantId) {

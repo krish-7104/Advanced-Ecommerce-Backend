@@ -1,6 +1,5 @@
 import express from "express";
-import { limitToAdmin } from "../../../../middlewares/limit-to-admin.middleware.js";
-import { authMiddleware } from "../../../../middlewares/auth.middleware.js";
+import { adminAuthMiddleware } from "../../../../middlewares/admin-auth.middleware.js";
 import {
   createProductVariantController,
   deleteProductVariantController,
@@ -15,22 +14,20 @@ import { parseFormData } from "../../../../middlewares/parse-formdata.middleware
 
 const router = express.Router();
 
-router.get("/all", authMiddleware, getAllProductVariantsController);
+router.get("/all", adminAuthMiddleware, getAllProductVariantsController);
 router.post(
   "/",
-  authMiddleware,
-  limitToAdmin,
+  adminAuthMiddleware,
   upload("product-variant").fields([{ name: "images", maxCount: 10 }]), // max 10 images
   parseFormData,
   createProductVariantController
 );
 
-router.get("/:id", authMiddleware, getProductVariantByIdController);
+router.get("/:id", adminAuthMiddleware, getProductVariantByIdController);
 
 router.patch(
   "/:id",
-  authMiddleware,
-  limitToAdmin,
+  adminAuthMiddleware,
   upload("product-variant").fields([{ name: "images", maxCount: 10 }]),
   parseFormData,
   updateProductVariantController
@@ -38,8 +35,7 @@ router.patch(
 
 router.delete(
   "/:id",
-  authMiddleware,
-  limitToAdmin,
+  adminAuthMiddleware,
   deleteProductVariantController
 );
 
