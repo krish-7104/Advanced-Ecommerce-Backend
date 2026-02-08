@@ -76,7 +76,7 @@ export const createCheckoutSessionService = async (orderId: string) => {
   await prisma.payment.create({
     data: {
       orderId,
-      stripeIntentId: session.id,
+      intentId: session.id,
       status: "CREATED",
       amount: order.totalAmount,
       currency: "INR",
@@ -95,12 +95,32 @@ export const checkPaymentStatusService = async (sessionId: string) => {
       expand: ["payment_intent"],
     });
 
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id;
+
+    const payment = await prisma.payment.update({
+      where: {
+        intentId: sessionId,
+      },
+      data: {
+        paymentIntentId: paymentIntentId,
+      },
+    });
+
+    await prisma.order.update({
+      where: {
+        id: payment.orderId,
+      },
+      data: {
+        status: session.payment_status == "paid" ? "PAID" : "PENDING",
+      },
+    });
+
     return {
       status: session.payment_status,
-      paymentIntentId:
-        typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : session.payment_intent?.id,
+      paymentIntentId: paymentIntentId!,
     };
   } catch (err: any) {
     throw new ApiError(
