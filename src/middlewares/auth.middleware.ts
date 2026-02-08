@@ -5,9 +5,9 @@ import ApiError from "../utils/ApiError";
 export const authMiddleware = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  const token = req.cookies?.access_token
+  const token = req.cookies?.access_token;
 
   if (!token) {
     return next(new ApiError(401, "Unauthorized"));
@@ -20,10 +20,13 @@ export const authMiddleware = (
   try {
     const payload = jwt.verify(
       token,
-      process.env.JWT_SECRET_KEY!
+      process.env.JWT_SECRET_KEY!,
     ) as JwtPayload;
 
-    req.user = payload;
+    req.user = payload as {
+      userId: string;
+      type: "USER" | "ADMIN";
+    };
 
     return next();
   } catch (error) {
