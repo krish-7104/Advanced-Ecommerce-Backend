@@ -1932,7 +1932,8 @@ export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof t
 export const PaymentScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
-  stripeIntentId: 'stripeIntentId',
+  intentId: 'intentId',
+  paymentIntentId: 'paymentIntentId',
   status: 'status',
   amount: 'amount',
   currency: 'currency',
