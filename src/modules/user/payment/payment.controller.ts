@@ -16,8 +16,6 @@ export const createPaymentIntentController = async (
 
     const payment = await createPaymentIntentService(orderId);
 
-    console.log(payment);
-
     return res
       .status(200)
       .send(
