@@ -33,9 +33,11 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 export const PaymentStatus = {
   CREATED: 'CREATED',
   REQUIRES_ACTION: 'REQUIRES_ACTION',
+  PROCESSING: 'PROCESSING',
   SUCCEEDED: 'SUCCEEDED',
   FAILED: 'FAILED',
-  REFUNDED: 'REFUNDED'
+  REFUNDED: 'REFUNDED',
+  CANCELLED: 'CANCELLED'
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]

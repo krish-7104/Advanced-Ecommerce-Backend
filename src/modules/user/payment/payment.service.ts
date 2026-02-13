@@ -2,7 +2,7 @@ import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
 import { stripe } from "../../../app";
 import "dotenv/config";
-
+import Stripe from "stripe";
 type ParsedAttributes = Record<string, string>;
 
 const parseAttributes = (raw: unknown): ParsedAttributes => {
@@ -64,14 +64,23 @@ export const createCheckoutSessionService = async (orderId: string) => {
         success_url: `${process.env.FRONTEND_URL}/order/${orderId}?payment=success`,
         cancel_url: `${process.env.FRONTEND_URL}/order/${orderId}?payment=failure`,
         metadata: { orderId },
+        payment_intent_data: {
+          metadata: { orderId },
+        },
+        expand: ["payment_intent"],
       },
       {
         idempotencyKey: `checkout_${orderId}`,
-      },
+      }
     );
   } catch (err: any) {
     throw new ApiError(500, err?.message || "Stripe checkout creation failed");
   }
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
 
   await prisma.payment.create({
     data: {
@@ -80,6 +89,7 @@ export const createCheckoutSessionService = async (orderId: string) => {
       status: "CREATED",
       amount: order.totalAmount,
       currency: "INR",
+      paymentIntentId,
     },
   });
 
@@ -89,43 +99,213 @@ export const createCheckoutSessionService = async (orderId: string) => {
   };
 };
 
-export const checkPaymentStatusService = async (sessionId: string) => {
+export const stripePaymentWebhookService = async (event: Stripe.Event) => {
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["payment_intent"],
-    });
+    console.log(`Processing webhook event: ${event.type}`);
 
-    const paymentIntentId =
-      typeof session.payment_intent === "string"
-        ? session.payment_intent
-        : session.payment_intent?.id;
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const orderId = session.metadata?.orderId;
+        const paymentIntentId =
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id;
 
-    const payment = await prisma.payment.update({
-      where: {
-        intentId: sessionId,
-      },
-      data: {
-        paymentIntentId: paymentIntentId,
-      },
-    });
+        if (!orderId) {
+          console.error("OrderId not found in checkout.session.completed");
+          return;
+        }
 
-    await prisma.order.update({
-      where: {
-        id: payment.orderId,
-      },
-      data: {
-        status: session.payment_status == "paid" ? "PAID" : "PENDING",
-      },
-    });
+        // Update payment using intentId (session.id) or paymentIntentId
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [
+              { intentId: session.id },
+              ...(paymentIntentId ? [{ paymentIntentId }] : []),
+            ],
+          },
+        });
 
-    return {
-      status: session.payment_status,
-      paymentIntentId: paymentIntentId!,
-    };
-  } catch (err: any) {
-    throw new ApiError(
-      500,
-      err?.message || "Failed to retrieve payment status",
-    );
+        if (!payment) {
+          console.error(`Payment not found for session ${session.id}`);
+          return;
+        }
+
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: session.payment_status === "paid" ? "SUCCEEDED" : "FAILED",
+            paymentIntentId: paymentIntentId || payment.paymentIntentId,
+          },
+        });
+
+        await prisma.order.update({
+          where: {
+            id: payment.orderId,
+          },
+          data: {
+            status: session.payment_status === "paid" ? "PACKED" : "PENDING",
+          },
+        });
+
+        if (session.payment_status === "paid") {
+          await prisma.order.update({
+            where: { id: payment.orderId },
+            data: { status: "PAID" },
+          });
+        }
+
+        break;
+      }
+
+      case "payment_intent.created": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const orderId = paymentIntent.metadata?.orderId;
+        const paymentIntentId = paymentIntent.id;
+
+        if (!orderId) {
+          console.log("OrderId not found in payment_intent.created - skipping");
+          return;
+        }
+
+        // Update payment with paymentIntentId when it's created
+        const payment = await prisma.payment.findFirst({
+          where: {
+            orderId,
+          },
+        });
+
+        if (payment) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              paymentIntentId,
+              status: "PROCESSING",
+            },
+          });
+        }
+
+        break;
+      }
+
+      case "payment_intent.succeeded": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const orderId = paymentIntent.metadata?.orderId;
+        const paymentIntentId = paymentIntent.id;
+
+        if (!orderId) {
+          console.error("OrderId not found in payment_intent.succeeded");
+          return;
+        }
+
+        // Find payment by paymentIntentId or orderId
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [{ paymentIntentId }, { orderId }],
+          },
+        });
+
+        if (!payment) {
+          console.error(
+            `Payment not found for payment intent ${paymentIntentId}`
+          );
+          return;
+        }
+
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: "SUCCEEDED",
+            paymentIntentId,
+          },
+        });
+
+        await prisma.order.update({
+          where: { id: payment.orderId },
+          data: { status: "PAID" },
+        });
+
+        break;
+      }
+
+      case "payment_intent.payment_failed": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntentId = paymentIntent.id;
+        const orderId = paymentIntent.metadata?.orderId;
+
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [{ paymentIntentId }, ...(orderId ? [{ orderId }] : [])],
+          },
+        });
+
+        if (payment) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: "FAILED",
+              paymentIntentId,
+            },
+          });
+        }
+
+        break;
+      }
+
+      case "payment_intent.canceled": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntentId = paymentIntent.id;
+        const orderId = paymentIntent.metadata?.orderId;
+
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [{ paymentIntentId }, ...(orderId ? [{ orderId }] : [])],
+          },
+        });
+
+        if (payment) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: "CANCELLED",
+              paymentIntentId,
+            },
+          });
+        }
+
+        break;
+      }
+
+      case "payment_intent.processing": {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntentId = paymentIntent.id;
+        const orderId = paymentIntent.metadata?.orderId;
+
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [{ paymentIntentId }, ...(orderId ? [{ orderId }] : [])],
+          },
+        });
+
+        if (payment) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: "PROCESSING",
+              paymentIntentId,
+            },
+          });
+        }
+
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+  } catch (error: any) {
+    console.error("Error processing webhook:", error);
+    throw error;
   }
 };

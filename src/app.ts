@@ -22,9 +22,19 @@ import adminAddressRoutes from "./modules/admin/addresses/address.route.js";
 import userOrderRoutes from "./modules/user/order/order.route.js";
 import adminOrderRoutes from "./modules/admin/order/order.route.js";
 import userPaymentRoutes from "./modules/user/payment/payment.route.js";
+import { stripePaymentWebhookController } from "./modules/user/payment/payment.controller.js";
 import Stripe from "stripe";
 
 const app = express();
+
+// Webhook route needs raw body for Stripe signature verification
+// Register it before express.json() middleware
+app.post(
+  "/api/v1/users/payment/stripe-webhook",
+  express.raw({ type: "application/json" }),
+  stripePaymentWebhookController
+);
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -38,7 +48,7 @@ app.use(
   cors({
     origin: process.env.ALLOWED_ORIGINS?.split(",") || [],
     credentials: true,
-  }),
+  })
 );
 
 // Reference Data
