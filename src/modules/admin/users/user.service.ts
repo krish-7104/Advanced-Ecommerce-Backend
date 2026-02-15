@@ -4,7 +4,7 @@ import { prisma } from "../../../utils/prisma";
 import { GetAllUsersQueryParams } from "./user.types";
 
 export const getAllUsersService = async (
-  queryParams: GetAllUsersQueryParams
+  queryParams: GetAllUsersQueryParams,
 ) => {
   try {
     const { page, limit, search, emailVerified } = queryParams;
@@ -72,7 +72,12 @@ export const getAllUsersService = async (
             select: {
               addresses: true,
               orders: true,
-              cartItems: true,
+            },
+          },
+          cartItems: {
+            select: {
+              status: true,
+              quantity: true,
             },
           },
         },
@@ -82,6 +87,24 @@ export const getAllUsersService = async (
       }),
       prisma.user.count({ where }),
     ]);
+
+    const formattedUsers = users.map((user) => {
+      const cartCount = user.cartItems
+        .filter((item) => item.status === "ACTIVE")
+        .reduce((acc, item) => acc + item.quantity, 0);
+
+      const wishlistCount = user.cartItems.filter(
+        (item) => item.status === "WISHLISTED",
+      ).length;
+
+      const { cartItems, ...rest } = user;
+
+      return {
+        ...rest,
+        cartCount,
+        wishlistCount,
+      };
+    });
 
     const pagination = shouldPaginate
       ? {
@@ -93,7 +116,7 @@ export const getAllUsersService = async (
       : undefined;
 
     return {
-      data: users,
+      data: formattedUsers,
       pagination,
     };
   } catch (error: any) {
