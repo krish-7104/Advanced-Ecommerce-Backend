@@ -50,11 +50,6 @@ export const registerAdminService = async (payload: RegisterAdminPayload) => {
         id: true,
         email: true,
         name: true,
-        role: {
-          select: {
-            permissions: true,
-          },
-        },
       },
     });
 
@@ -181,6 +176,9 @@ export const aboutAdminService = async (userId: string) => {
     const user = await prisma.adminUser.findUnique({
       where: {
         id: userId,
+      },
+      include: {
+        permissions: true,
       },
       omit: {
         password: true,
