@@ -12,7 +12,6 @@ export async function seedProducts() {
   console.log("🧹 Cleaning up existing product and category data...");
   try {
     // Delete in reverse order of dependencies
-    await prisma.review.deleteMany();
     await prisma.cartItem.deleteMany();
     await prisma.orderItem.deleteMany();
     await prisma.productVariant.deleteMany();

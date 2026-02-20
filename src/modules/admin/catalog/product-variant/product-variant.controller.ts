@@ -13,10 +13,16 @@ export const createProductVariantController = async (
   req: Request,
   res: Response
 ) => {
-  let { sku, attributes, price, stockAvailable, coverImageIndex, productId } =
+  let { sku, attributes, price, stockAvailable, coverImageIndex, productId, imageUrls } =
     req.body;
 
-  const images = (req.files as any)?.images;
+  const uploadedImages = (req.files as any)?.images || [];
+  const urlImages: string[] = Array.isArray(imageUrls) ? imageUrls : imageUrls ? [imageUrls] : [];
+  
+  const images: (Express.Multer.File | string)[] = [
+    ...uploadedImages,
+    ...urlImages
+  ];
 
   const errors: string[] = [];
 
@@ -25,8 +31,8 @@ export const createProductVariantController = async (
   if (Object.keys(attributes).length == 0) errors.push("attributes");
   if (price == null) errors.push("price");
   if (stockAvailable == null) errors.push("stockAvailable");
-  if (!Array.isArray(images) || images.length === 0) {
-    errors.push("at least one image");
+  if (images.length === 0) {
+    errors.push("at least one image (file upload or URL)");
   }
   coverImageIndex = Number(coverImageIndex) || 0;
 
@@ -78,16 +84,23 @@ export const updateProductVariantController = async (
     throw new ApiError(400, "Product Variant ID is required");
   }
 
-  const images = (req.files as any)?.images || [];
-
-  const {
-    deleteImageIds,
-    reorderImages,
-    newImageOrder,
-    coverImageIndex,
-    coverImageId,
-    ...variantPayload
-  } = req.body;
+  const uploadedImages = (req.files as any)?.images || [];
+  let { imageUrls, deleteImageIds, reorderImages, newImageOrder, coverImageIndex, coverImageId, ...variantPayload } = req.body;
+  
+  let urlImages: string[] = [];
+  if (imageUrls) {
+    try {
+      const parsed = typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
+      urlImages = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      urlImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+    }
+  }
+  
+  const images: (Express.Multer.File | string)[] = [
+    ...uploadedImages,
+    ...urlImages
+  ];
 
   let parsedDeleteImageIds: string[] = [];
   let parsedReorderImages: { id: string; order: number }[] = [];

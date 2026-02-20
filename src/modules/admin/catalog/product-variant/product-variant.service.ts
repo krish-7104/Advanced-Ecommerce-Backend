@@ -2,6 +2,7 @@ import { ProductVariantModel } from "../../../../../generated/prisma/models";
 import ApiError from "../../../../utils/ApiError";
 import { prisma } from "../../../../utils/prisma";
 import { uploadFileHandler } from "../../../../utils/upload-handlers/upload-file-handler";
+import { handleVariantImage } from "../../../../utils/upload-handlers/handle-variant-image";
 import { AssetOwner } from "../../../../../generated/prisma/browser";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { UpdateVariantInputTypes } from "./product-variant.types";
@@ -10,7 +11,7 @@ import fs from "fs";
 export const createProductVariantService = async (
   payload: ProductVariantModel,
   productId: string,
-  images: Express.Multer.File[],
+  images: (Express.Multer.File | string)[],
   coverImageIndex: number,
 ) => {
   try {
@@ -86,8 +87,8 @@ export const createProductVariantService = async (
     });
 
     await Promise.all(
-      images.map((image: any, index: number) =>
-        uploadFileHandler(
+      images.map((image: Express.Multer.File | string, index: number) =>
+        handleVariantImage(
           image,
           Product.id,
           AssetOwner.PRODUCT_IMAGE,
@@ -258,7 +259,9 @@ export const updateProductVariantService = async ({
       });
 
       for (const asset of assets) {
-        if (fs.existsSync(asset.path)) fs.unlinkSync(asset.path);
+        if (asset.path && !asset.path.startsWith("http") && fs.existsSync(asset.path)) {
+          fs.unlinkSync(asset.path);
+        }
         await tx.asset.delete({ where: { id: asset.id } });
       }
     }
@@ -288,7 +291,7 @@ export const updateProductVariantService = async ({
     if (newImages?.length) {
       await Promise.all(
         newImages.map((image, index) =>
-          uploadFileHandler(
+          handleVariantImage(
             image,
             variantId,
             AssetOwner.PRODUCT_IMAGE,
