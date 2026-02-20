@@ -229,7 +229,15 @@ export const getOrderByIdService = async (orderId: string, userId: string) => {
       userId: userId,
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          variant: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      },
       address: true,
       payments: true,
     },
