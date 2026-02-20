@@ -11,17 +11,35 @@ import ApiResponse from "../../../../utils/ApiResponse";
 
 export const createProductVariantController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
-  let { sku, attributes, price, stockAvailable, coverImageIndex, productId, imageUrls } =
-    req.body;
+  let {
+    sku,
+    attributes,
+    price,
+    stockAvailable,
+    coverImageIndex,
+    productId,
+    imageUrls,
+  } = req.body;
 
   const uploadedImages = (req.files as any)?.images || [];
-  const urlImages: string[] = Array.isArray(imageUrls) ? imageUrls : imageUrls ? [imageUrls] : [];
-  
+
+  // Handles: JSON string (from multipart), plain array (from JSON body), or single string
+  let urlImages: string[] = [];
+  if (imageUrls) {
+    try {
+      const parsed =
+        typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
+      urlImages = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      urlImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+    }
+  }
+
   const images: (Express.Multer.File | string)[] = [
     ...uploadedImages,
-    ...urlImages
+    ...urlImages,
   ];
 
   const errors: string[] = [];
@@ -44,7 +62,7 @@ export const createProductVariantController = async (
     req.body,
     productId,
     images,
-    coverImageIndex
+    coverImageIndex,
   );
 
   res
@@ -54,17 +72,17 @@ export const createProductVariantController = async (
 
 export const getAllProductVariantsController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const productVariants = await getAllProductVariantsService();
   res.send(
-    new ApiResponse(201, productVariants, "Product Variants get successfully!")
+    new ApiResponse(201, productVariants, "Product Variants get successfully!"),
   );
 };
 
 export const getProductVariantByIdController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { id } = req.params;
   if (!id) {
@@ -76,7 +94,7 @@ export const getProductVariantByIdController = async (
 
 export const updateProductVariantController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { id } = req.params;
 
@@ -85,21 +103,30 @@ export const updateProductVariantController = async (
   }
 
   const uploadedImages = (req.files as any)?.images || [];
-  let { imageUrls, deleteImageIds, reorderImages, newImageOrder, coverImageIndex, coverImageId, ...variantPayload } = req.body;
-  
+  let {
+    imageUrls,
+    deleteImageIds,
+    reorderImages,
+    newImageOrder,
+    coverImageIndex,
+    coverImageId,
+    ...variantPayload
+  } = req.body;
+
   let urlImages: string[] = [];
   if (imageUrls) {
     try {
-      const parsed = typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
+      const parsed =
+        typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
       urlImages = Array.isArray(parsed) ? parsed : [parsed];
     } catch {
       urlImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
     }
   }
-  
+
   const images: (Express.Multer.File | string)[] = [
     ...uploadedImages,
-    ...urlImages
+    ...urlImages,
   ];
 
   let parsedDeleteImageIds: string[] = [];
@@ -140,7 +167,7 @@ export const updateProductVariantController = async (
 
 export const deleteProductVariantController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { id } = req.params;
 
