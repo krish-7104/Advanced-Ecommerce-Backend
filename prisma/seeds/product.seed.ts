@@ -12,13 +12,12 @@ export async function seedProducts() {
   console.log("🧹 Cleaning up existing product and category data...");
   try {
     // Delete in reverse order of dependencies
-    await prisma.review.deleteMany(); // Reviews depend on products/users
-    await prisma.cartItem.deleteMany(); // CartItems depend on variants
-    await prisma.orderItem.deleteMany(); // OrderItems depend on variants
+    await prisma.review.deleteMany();
+    await prisma.cartItem.deleteMany();
+    await prisma.orderItem.deleteMany();
     await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
 
-    // Delete categories: children first (level > 0), then parents
     await prisma.category.deleteMany({ where: { NOT: { parentId: null } } });
     await prisma.category.deleteMany();
     console.log("  ✓ Cleanup complete");
@@ -152,24 +151,28 @@ export async function seedProducts() {
         storage: "128GB",
         price: 99900,
         sku: "IP16PRO-BLK-128",
+        isDefault: true,
       },
       {
         color: "Black Titanium",
         storage: "256GB",
         price: 109900,
         sku: "IP16PRO-BLK-256",
+        isDefault: false,
       },
       {
         color: "Blue Titanium",
         storage: "128GB",
         price: 99900,
         sku: "IP16PRO-BLU-128",
+        isDefault: false,
       },
       {
         color: "Natural Titanium",
         storage: "128GB",
         price: 99900,
         sku: "IP16PRO-NAT-128",
+        isDefault: false,
       },
     ];
 
@@ -193,6 +196,7 @@ export async function seedProducts() {
           stockAvailable: 50,
           attributes: variantAttributes,
           isActive: true,
+          isDefault: v.isDefault,
         },
       });
       console.log(`    ✓ Variant created: ${v.sku}`);
@@ -228,12 +232,14 @@ export async function seedProducts() {
         storage: "256GB",
         price: 129999,
         sku: "S24U-GRY-256",
+        isDefault: true,
       },
       {
         color: "Titanium Black",
         storage: "512GB",
         price: 139999,
         sku: "S24U-BLK-512",
+        isDefault: false,
       },
     ];
 
@@ -255,6 +261,7 @@ export async function seedProducts() {
           stockAvailable: 30,
           attributes: variantAttributes,
           isActive: true,
+          isDefault: v.isDefault,
         },
       });
       console.log(`    ✓ Variant created: ${v.sku}`);
@@ -290,9 +297,27 @@ export async function seedProducts() {
     console.log(`  ✓ Product created: ${tshirt.name}`);
 
     const tshirtVariants = [
-      { size: "M", color: "Black", sku: "TSHIRT-M-BLK", price: 999 },
-      { size: "L", color: "Black", sku: "TSHIRT-L-BLK", price: 999 },
-      { size: "M", color: "White", sku: "TSHIRT-M-WHT", price: 999 },
+      {
+        size: "M",
+        color: "Black",
+        sku: "TSHIRT-M-BLK",
+        price: 1999,
+        isDefault: true,
+      },
+      {
+        size: "L",
+        color: "Black",
+        sku: "TSHIRT-L-BLK",
+        price: 1999,
+        isDefault: false,
+      },
+      {
+        size: "M",
+        color: "White",
+        sku: "TSHIRT-M-WHT",
+        price: 1999,
+        isDefault: false,
+      },
     ];
 
     for (const v of tshirtVariants) {
@@ -313,6 +338,7 @@ export async function seedProducts() {
           stockAvailable: 100,
           attributes: variantAttributes,
           isActive: true,
+          isDefault: v.isDefault,
         },
       });
       console.log(`    ✓ Variant created: ${v.sku}`);

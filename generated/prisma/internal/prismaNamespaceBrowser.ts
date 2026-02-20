@@ -63,9 +63,7 @@ export const ModelName = {
   Payment: 'Payment',
   AdminUser: 'AdminUser',
   AdminUserToken: 'AdminUserToken',
-  Role: 'Role',
   Permission: 'Permission',
-  RolePermission: 'RolePermission',
   AdminAuditLog: 'AdminAuditLog',
   Asset: 'Asset',
   Review: 'Review'
@@ -245,7 +243,6 @@ export const AdminUserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   isActive: 'isActive',
-  roleId: 'roleId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -265,31 +262,15 @@ export const AdminUserTokenScalarFieldEnum = {
 export type AdminUserTokenScalarFieldEnum = (typeof AdminUserTokenScalarFieldEnum)[keyof typeof AdminUserTokenScalarFieldEnum]
 
 
-export const RoleScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  createdAt: 'createdAt'
-} as const
-
-export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
-
-
 export const PermissionScalarFieldEnum = {
   id: 'id',
+  action: 'action',
+  resource: 'resource',
   code: 'code',
   description: 'description'
 } as const
 
 export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
-
-
-export const RolePermissionScalarFieldEnum = {
-  roleId: 'roleId',
-  permissionId: 'permissionId'
-} as const
-
-export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
 
 
 export const AdminAuditLogScalarFieldEnum = {

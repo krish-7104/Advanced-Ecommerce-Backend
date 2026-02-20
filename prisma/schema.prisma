@@ -216,11 +216,11 @@ model Payment {
   id      String @id @default(cuid())
   orderId String
 
-  intentId        String  @unique
+  intentId        String        @unique
   paymentIntentId String?
   status          PaymentStatus
-  amount          Decimal @db.Decimal(10, 2)
-  currency        String  @default("INR")
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("INR")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -248,8 +248,7 @@ model AdminUser {
   password String
   isActive Boolean @default(true)
 
-  roleId String
-  role   Role   @relation(fields: [roleId], references: [id])
+  permissions Permission[]
 
   logs AdminAuditLog[]
 
@@ -268,33 +267,14 @@ model AdminUserToken {
   expiresAt DateTime
 }
 
-model Role {
-  id          String  @id @default(cuid())
-  name        String  @unique // SuperAdmin, Manager, Support
-  description String?
-
-  permissions RolePermission[]
-  admins      AdminUser[]
-
-  createdAt DateTime @default(now())
-}
-
 model Permission {
   id          String  @id @default(cuid())
-  code        String  @unique
+  action      String // view, create, edit, delete
+  resource    String // products, orders, etc.
+  code        String  @unique // resource:action e.g. products:view
   description String?
 
-  roles RolePermission[]
-}
-
-model RolePermission {
-  roleId       String
-  permissionId String
-
-  role       Role       @relation(fields: [roleId], references: [id])
-  permission Permission @relation(fields: [permissionId], references: [id])
-
-  @@id([roleId, permissionId])
+  admins AdminUser[]
 }
 
 model AdminAuditLog {

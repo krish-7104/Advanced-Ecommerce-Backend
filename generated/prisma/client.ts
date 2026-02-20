@@ -100,20 +100,10 @@ export type AdminUser = Prisma.AdminUserModel
  */
 export type AdminUserToken = Prisma.AdminUserTokenModel
 /**
- * Model Role
- * 
- */
-export type Role = Prisma.RoleModel
-/**
  * Model Permission
  * 
  */
 export type Permission = Prisma.PermissionModel
-/**
- * Model RolePermission
- * 
- */
-export type RolePermission = Prisma.RolePermissionModel
 /**
  * Model AdminAuditLog
  * 

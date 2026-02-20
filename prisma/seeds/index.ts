@@ -13,7 +13,7 @@ async function main() {
 
   try {
     // Seed admin only
-    await seedAdmin();
+    await seedAdmin(prisma);
     // Seed products and categories
     await seedProducts();
 

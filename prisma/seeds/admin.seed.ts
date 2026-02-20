@@ -1,116 +1,82 @@
 import { PrismaClient } from "../../generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 
-const connectionString = `${process.env.DATABASE_URL}`;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+const RESOURCES = [
+  "dashboard",
+  "catalog", // products, categories, variants
+  "orders",
+  "customers",
+  "admins", // Manage other admin users
+  "settings",
+];
 
-export async function seedAdmin() {
-  console.log("🌱 Seeding admin users, roles, and permissions...");
+const ACTIONS = ["view", "create", "edit", "delete"];
 
-  // Create permissions
-  const permissions = [
-    { code: "USER_MANAGEMENT", description: "Manage user accounts" },
-    { code: "PRODUCT_MANAGEMENT", description: "Manage products and variants" },
-    { code: "CATEGORY_MANAGEMENT", description: "Manage categories" },
-    { code: "ORDER_MANAGEMENT", description: "Manage orders" },
-    { code: "REVIEW_MANAGEMENT", description: "Manage product reviews" },
-    { code: "ADMIN_MANAGEMENT", description: "Manage admin users and roles" },
-    { code: "ANALYTICS_VIEW", description: "View analytics and reports" },
-    { code: "SETTINGS_MANAGEMENT", description: "Manage system settings" },
-  ];
+export async function seedAdmin(prisma: PrismaClient) {
+  console.log("Seeding admin data...");
 
-  const createdPermissions = [];
-  for (const perm of permissions) {
-    const permission = await prisma.permission.upsert({
-      where: { code: perm.code },
-      update: {},
-      create: perm,
-    });
-    createdPermissions.push(permission);
-    console.log(`  ✓ Permission created: ${permission.code}`);
+  // 1. Create Permissions
+  console.log("Creating permissions...");
+  const permissions = [];
+
+  for (const resource of RESOURCES) {
+    for (const action of ACTIONS) {
+      const code = `${resource}:${action}`;
+      const description = `Can ${action} ${resource}`;
+
+      const permission = await prisma.permission.upsert({
+        where: { code },
+        update: {},
+        create: {
+          code,
+          resource,
+          action,
+          description,
+        },
+      });
+      permissions.push(permission);
+    }
   }
 
-  // Create Super Admin role with all permissions
-  const superAdminRole = await prisma.role.upsert({
-    where: { name: "SuperAdmin" },
-    update: {},
-    create: {
-      name: "SuperAdmin",
-      description: "Full system access with all permissions",
-    },
-  });
-  console.log(`  ✓ Role created: ${superAdminRole.name}`);
+  // 2. Create Super Admin
+  const email = process.env.NEXT_SUPER_ADMIN_EMAIL;
+  if (!email) {
+    console.warn(
+      "NEXT_SUPER_ADMIN_EMAIL not set, skipping super admin creation",
+    );
+    return;
+  }
 
-  // Assign all permissions to SuperAdmin role
-  for (const permission of createdPermissions) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: superAdminRole.id,
-          permissionId: permission.id,
+  const existingAdmin = await prisma.adminUser.findUnique({ where: { email } });
+
+  if (!existingAdmin) {
+    console.log(`Creating super admin: ${email}`);
+    const hashedPassword = await bcrypt.hash("admin123", 10);
+
+    await prisma.adminUser.create({
+      data: {
+        name: "Super Admin",
+        email,
+        password: hashedPassword,
+        isActive: true,
+        permissions: {
+          connect: permissions.map((p) => ({ id: p.id })),
         },
       },
-      update: {},
-      create: {
-        roleId: superAdminRole.id,
-        permissionId: permission.id,
-      },
     });
-  }
-  console.log(`  ✓ Assigned all permissions to SuperAdmin role`);
-
-  // Create Manager role with limited permissions
-  const managerRole = await prisma.role.upsert({
-    where: { name: "Manager" },
-    update: {},
-    create: {
-      name: "Manager",
-      description: "Manage products, categories, and orders",
-    },
-  });
-  console.log(`  ✓ Role created: ${managerRole.name}`);
-
-  // Assign specific permissions to Manager role
-  const managerPermissions = createdPermissions.filter((p) =>
-    ["PRODUCT_MANAGEMENT", "CATEGORY_MANAGEMENT", "ORDER_MANAGEMENT", "ANALYTICS_VIEW"].includes(
-      p.code
-    )
-  );
-  for (const permission of managerPermissions) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: managerRole.id,
-          permissionId: permission.id,
+  } else {
+    console.log(`Super admin exists, ensuring all permissions...`);
+    // Update existing super admin to have all permissions
+    await prisma.adminUser.update({
+      where: { email },
+      data: {
+        permissions: {
+          set: permissions.map((p) => ({ id: p.id })), // Use set to ensure they have ALL
         },
       },
-      update: {},
-      create: {
-        roleId: managerRole.id,
-        permissionId: permission.id,
-      },
     });
   }
-  console.log(`  ✓ Assigned permissions to Manager role`);
 
-  // Create default Super Admin user
-  const hashedPassword = await bcrypt.hash("Admin@123", 10);
-  const adminUser = await prisma.adminUser.upsert({
-    where: { email: "admin@ecommercely.com" },
-    update: {},
-    create: {
-      name: "Super Admin",
-      email: "admin@ecommercely.com",
-      password: hashedPassword,
-      isActive: true,
-      roleId: superAdminRole.id,
-    },
-  });
-  console.log(`  ✓ Admin user created: ${adminUser.email}`);
-  console.log(`    Password: Admin@123`);
-
-  console.log("✅ Admin seeding completed!\n");
+  console.log("Admin seeding completed.");
 }

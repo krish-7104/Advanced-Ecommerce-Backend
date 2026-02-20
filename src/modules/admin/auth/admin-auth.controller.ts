@@ -14,14 +14,14 @@ import {
 } from "../../../utils/constants";
 
 export const registerAdminController = async (req: Request, res: Response) => {
-  const { email, password, name, roleId } = req.body;
+  const { email, password, name } = req.body;
 
-  if (!email || !password || !name || !roleId) {
-    throw new ApiError(400, "Email, password, name, and roleId are required");
+  if (!email || !password || !name) {
+    throw new ApiError(400, "Email, password, name are required");
   }
 
   const { admin, accessToken, refreshToken } = await registerAdminService(
-    req.body
+    req.body,
   );
 
   res.cookie("admin_access_token", accessToken, ACCESS_COOKIE_OPTIONS);
@@ -38,7 +38,7 @@ export const loginAdminController = async (req: Request, res: Response) => {
   }
 
   const { admin, accessToken, refreshToken } = await loginAdminService(
-    req.body
+    req.body,
   );
 
   res.cookie("admin_access_token", accessToken, ACCESS_COOKIE_OPTIONS);
@@ -72,7 +72,7 @@ export const aboutAdminController = async (req: Request, res: Response) => {
 
 export const refreshAdminTokenController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const refreshToken = req.cookies?.admin_refresh_token;
 

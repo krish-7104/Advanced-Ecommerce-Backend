@@ -16,7 +16,7 @@ import {
 
 export const registerAdminService = async (payload: RegisterAdminPayload) => {
   try {
-    const { email, password, name, roleId } = payload;
+    const { email, password, name } = payload;
 
     if (!email || !email.includes("@")) {
       throw new ApiError(400, "Invalid email address");
@@ -30,24 +30,12 @@ export const registerAdminService = async (payload: RegisterAdminPayload) => {
       throw new ApiError(400, "Name is required");
     }
 
-    if (!roleId) {
-      throw new ApiError(400, "Role ID is required");
-    }
-
     const existingAdmin = await prisma.adminUser.findUnique({
       where: { email },
     });
 
     if (existingAdmin) {
       throw new ApiError(409, "Admin already exists");
-    }
-
-    const role = await prisma.role.findUnique({
-      where: { id: roleId },
-    });
-
-    if (!role) {
-      throw new ApiError(404, "Role not found");
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -57,13 +45,11 @@ export const registerAdminService = async (payload: RegisterAdminPayload) => {
         email,
         password: passwordHash,
         name,
-        roleId,
       },
       select: {
         id: true,
         email: true,
         name: true,
-        roleId: true,
         role: {
           select: {
             permissions: true,
@@ -75,7 +61,7 @@ export const registerAdminService = async (payload: RegisterAdminPayload) => {
     const accessToken = jwt.sign(
       { userId: admin.id, type: "ADMIN" },
       process.env.JWT_SECRET_KEY!,
-      { expiresIn: JWT_ACCESS_TOKEN_TTL }
+      { expiresIn: JWT_ACCESS_TOKEN_TTL },
     );
 
     // Generates a refresh token hash it and store it in db
@@ -107,7 +93,6 @@ export const loginAdminService = async (payload: LoginAdminPayload) => {
 
     const admin = await prisma.adminUser.findUnique({
       where: { email },
-      include: { role: true },
     });
 
     if (!admin || !admin.password) {
@@ -128,7 +113,7 @@ export const loginAdminService = async (payload: LoginAdminPayload) => {
     const accessToken = jwt.sign(
       { userId: admin.id, type: "ADMIN" },
       process.env.JWT_SECRET_KEY!,
-      { expiresIn: JWT_ACCESS_TOKEN_TTL }
+      { expiresIn: JWT_ACCESS_TOKEN_TTL },
     );
 
     // Generate refresh token hash it and store it in db
@@ -148,7 +133,6 @@ export const loginAdminService = async (payload: LoginAdminPayload) => {
         id: admin.id,
         email: admin.email,
         name: admin.name,
-        role: admin.role,
       },
       accessToken,
       refreshToken,
@@ -200,9 +184,6 @@ export const aboutAdminService = async (userId: string) => {
       },
       omit: {
         password: true,
-      },
-      include: {
-        role: true,
       },
     });
 
@@ -274,7 +255,7 @@ export const refreshAdminTokenService = async (refreshToken: string) => {
     const newAccessToken = jwt.sign(
       { userId: storedToken.userId, type: "ADMIN" },
       process.env.JWT_SECRET_KEY!,
-      { expiresIn: JWT_ACCESS_TOKEN_TTL }
+      { expiresIn: JWT_ACCESS_TOKEN_TTL },
     );
 
     return {
