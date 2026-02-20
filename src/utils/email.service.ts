@@ -25,7 +25,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
 export const sendPasswordResetEmail = async (
   email: string,
-  resetToken: string
+  resetToken: string,
 ) => {
   const resetUrl = `${
     process.env.FRONTEND_URL || "http://localhost:3000"
@@ -46,11 +46,11 @@ export const sendPasswordResetEmail = async (
 
 export const sendEmailVerificationEmail = async (
   email: string,
-  verificationToken: string
+  verificationToken: string,
 ) => {
   const verifyUrl = `${
     process.env.FRONTEND_URL || "http://localhost:3000"
-  }/verify-email?token=${verificationToken}`;
+  }/verify-email/${verificationToken}`;
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>Verify Your Email</h2>
