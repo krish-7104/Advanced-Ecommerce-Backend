@@ -1,45 +1,13 @@
 import { PrismaClient } from "../../generated/prisma/client";
 import bcrypt from "bcrypt";
 import "dotenv/config";
-
-const RESOURCES = [
-  "dashboard",
-  "catalog", // products, categories, variants
-  "orders",
-  "customers",
-  "admins", // Manage other admin users
-  "settings",
-];
-
-const ACTIONS = ["view", "create", "edit", "delete"];
+import { seedPermissions } from "./permission.seed";
 
 export async function seedAdmin(prisma: PrismaClient) {
   console.log("Seeding admin data...");
 
-  // 1. Create Permissions
-  console.log("Creating permissions...");
-  const permissions = [];
+  const permissions = await seedPermissions(prisma);
 
-  for (const resource of RESOURCES) {
-    for (const action of ACTIONS) {
-      const code = `${resource}:${action}`;
-      const description = `Can ${action} ${resource}`;
-
-      const permission = await prisma.permission.upsert({
-        where: { code },
-        update: {},
-        create: {
-          code,
-          resource,
-          action,
-          description,
-        },
-      });
-      permissions.push(permission);
-    }
-  }
-
-  // 2. Create Super Admin
   const email = process.env.NEXT_SUPER_ADMIN_EMAIL;
   if (!email) {
     console.warn(

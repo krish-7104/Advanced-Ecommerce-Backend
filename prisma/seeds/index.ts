@@ -12,7 +12,7 @@ async function main() {
   console.log("🚀 Starting database seeding...\n");
 
   try {
-    // Seed admin only
+    // seedAdmin internally calls seedPermissions first, then creates the super admin
     await seedAdmin(prisma);
     // Seed products and categories
     await seedProducts();

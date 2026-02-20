@@ -13,17 +13,17 @@ const router = Router();
 
 router.use(adminAuthMiddleware);
 
-router.get("/", checkPermission("admins:view"), getAllAdminUsersController);
+router.get("/", checkPermission("admins.view"), getAllAdminUsersController);
 
-router.post("/", checkPermission("admins:create"), createAdminUserController);
+router.post("/", checkPermission("admins.create"), createAdminUserController);
 
-router.get("/:id", checkPermission("admins:view"), getAdminUserByIdController);
+router.get("/:id", checkPermission("admins.view"), getAdminUserByIdController);
 
-router.patch("/:id", checkPermission("admins:edit"), updateAdminUserController);
+router.patch("/:id", checkPermission("admins.update"), updateAdminUserController);
 
 router.delete(
   "/:id",
-  checkPermission("admins:delete"),
+  checkPermission("admins.delete"),
   deleteAdminUserController,
 );
 
