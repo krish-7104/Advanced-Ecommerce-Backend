@@ -54,7 +54,7 @@ export const registerUserService = async (payload: RegisterUserPayload) => {
       process.env.JWT_SECRET_KEY!,
       {
         expiresIn: JWT_ACCESS_TOKEN_TTL,
-      }
+      },
     );
 
     // Generates a refresh token hash it and store it in db
@@ -106,7 +106,7 @@ export const loginUserService = async (payload: LoginUserPayload) => {
       process.env.JWT_SECRET_KEY!,
       {
         expiresIn: JWT_ACCESS_TOKEN_TTL,
-      }
+      },
     );
 
     // Generate refresh token hash it and store it in db
@@ -147,7 +147,7 @@ export const loginUserService = async (payload: LoginUserPayload) => {
 
 export const updateUserService = async (
   payload: UserUpdatePayload,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!userId) {
@@ -199,7 +199,7 @@ export const updateUserService = async (
 
 export const aboutUserService = async (
   userId: string,
-  queryParams: AboutUserQueryParams
+  queryParams: AboutUserQueryParams,
 ) => {
   try {
     if (!userId) {
@@ -326,7 +326,7 @@ export const refreshTokenService = async (refreshToken: string) => {
     const newAccessToken = jwt.sign(
       { userId: storedToken.userId, type: "USER" },
       process.env.JWT_SECRET_KEY!,
-      { expiresIn: JWT_ACCESS_TOKEN_TTL }
+      { expiresIn: JWT_ACCESS_TOKEN_TTL },
     );
 
     return {
@@ -578,7 +578,7 @@ export const getAllSessionsService = async (userId: string) => {
 
 export const logoutSessionService = async (
   sessionId: string,
-  userId: string
+  userId: string,
 ) => {
   try {
     if (!sessionId) {
@@ -600,7 +600,7 @@ export const logoutSessionService = async (
     if (session.userId !== userId) {
       throw new ApiError(
         403,
-        "You don't have permission to logout this session"
+        "You don't have permission to logout this session",
       );
     }
 
@@ -624,9 +624,33 @@ export const deleteAccountService = async (userId: string) => {
       throw new ApiError(400, "UserId is required");
     }
 
+    const orders = await prisma.order.findMany({
+      where: { userId },
+    });
+
+    const payments = await prisma.payment.findMany({
+      where: { orderId: { in: orders.map((order) => order.id) } },
+    });
+
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: { in: orders.map((order) => order.id) } },
+    });
+
     await prisma.$transaction(async (tx) => {
       await tx.userToken.deleteMany({
         where: { userId },
+      });
+
+      await tx.payment.deleteMany({
+        where: { id: { in: payments.map((payment) => payment.id) } },
+      });
+
+      await tx.orderItem.deleteMany({
+        where: { id: { in: orderItems.map((orderItem) => orderItem.id) } },
+      });
+
+      await tx.order.deleteMany({
+        where: { id: { in: orders.map((order) => order.id) } },
       });
 
       await tx.address.deleteMany({
