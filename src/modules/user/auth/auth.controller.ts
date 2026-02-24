@@ -28,7 +28,7 @@ export const registerUserController = async (req: Request, res: Response) => {
   }
 
   const { user, accessToken, refreshToken } = await registerUserService(
-    req.body
+    req.body,
   );
 
   res.cookie("access_token", accessToken, ACCESS_COOKIE_OPTIONS);
@@ -121,15 +121,16 @@ export const updatePasswordController = async (req: Request, res: Response) => {
 
 export const sendEmailVerificationController = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const userId = req?.user?.userId;
+  const { redirect } = req.body;
 
   if (!userId) {
     throw new ApiError(400, "userId is missing");
   }
 
-  const result = await sendEmailVerificationService(userId);
+  const result = await sendEmailVerificationService(userId, redirect);
   return res.send(new ApiResponse(200, result, result.message));
 };
 
@@ -152,7 +153,7 @@ export const getAllSessionsController = async (req: Request, res: Response) => {
 
   const sessions = await getAllSessionsService(userId);
   return res.send(
-    new ApiResponse(200, sessions, "Sessions retrieved successfully")
+    new ApiResponse(200, sessions, "Sessions retrieved successfully"),
   );
 };
 

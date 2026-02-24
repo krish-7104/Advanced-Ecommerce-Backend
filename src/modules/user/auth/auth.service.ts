@@ -447,7 +447,10 @@ export const updatePasswordService = async (payload: UpdatePasswordPayload) => {
   }
 };
 
-export const sendEmailVerificationService = async (userId: string) => {
+export const sendEmailVerificationService = async (
+  userId: string,
+  pathname?: string,
+) => {
   try {
     if (!userId) {
       throw new ApiError(400, "UserId is required");
@@ -479,7 +482,7 @@ export const sendEmailVerificationService = async (userId: string) => {
       },
     });
 
-    await sendEmailVerificationEmail(user.email, verificationToken);
+    await sendEmailVerificationEmail(user.email, verificationToken, pathname);
 
     return { message: "Verification email sent successfully" };
   } catch (error: any) {

@@ -47,10 +47,14 @@ export const sendPasswordResetEmail = async (
 export const sendEmailVerificationEmail = async (
   email: string,
   verificationToken: string,
+  redirect?: string,
 ) => {
-  const verifyUrl = `${
+  let verifyUrl = `${
     process.env.FRONTEND_URL || "http://localhost:3000"
   }/verify-email/${verificationToken}`;
+  if (redirect) {
+    verifyUrl += `?redirect=${redirect}`;
+  }
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>Verify Your Email</h2>
