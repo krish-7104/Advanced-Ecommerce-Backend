@@ -1,5 +1,6 @@
 import express from "express";
 import { adminAuthMiddleware } from "../../../middlewares/admin-auth.middleware.js";
+import { checkPermission } from "../../../middlewares/rbac.middleware";
 import {
   getAllOrdersController,
   getOrderByIdController,
@@ -8,12 +9,23 @@ import {
 
 const router = express.Router();
 
-router.get("/", adminAuthMiddleware, getAllOrdersController);
-router.get("/:id", adminAuthMiddleware, getOrderByIdController);
+router.get(
+  "/",
+  adminAuthMiddleware,
+  checkPermission("orders.view"),
+  getAllOrdersController,
+);
+router.get(
+  "/:id",
+  adminAuthMiddleware,
+  checkPermission("orders.view"),
+  getOrderByIdController,
+);
 router.patch(
   "/:id/status",
   adminAuthMiddleware,
-  updateOrderStatusController
+  checkPermission("orders.update"),
+  updateOrderStatusController,
 );
 
 export default router;

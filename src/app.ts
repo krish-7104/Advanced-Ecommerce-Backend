@@ -21,11 +21,12 @@ import categoryRoutes from "./modules/admin/catalog/category/category.route.js";
 import productRoutes from "./modules/admin/catalog/product/product.route.js";
 import productVariantRoutes from "./modules/admin/catalog/product-variant/product-variant.route.js";
 import adminAuthRoutes from "./modules/admin/auth/admin-auth.route.js";
-import systemAdminRoutes from "./modules/admin/admin-users/admin-user.route.js"; // New
-import adminUserRoutes from "./modules/admin/users/user.route.js"; // Existing customer management
+import systemAdminRoutes from "./modules/admin/admin-users/admin-user.route.js";
+import adminUserRoutes from "./modules/admin/users/user.route.js";
 import adminAddressRoutes from "./modules/admin/addresses/address.route.js";
 import adminOrderRoutes from "./modules/admin/order/order.route.js";
 import permissionRoutes from "./modules/admin/permissions/permission.route.js";
+import adminDashboardRoutes from "./modules/admin/dashboard/dashboard.routes.js";
 
 // Routes - Reference
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
@@ -94,6 +95,7 @@ app.use("/api/v1/admin/users", adminUserRoutes);
 app.use("/api/v1/admin/addresses", adminAddressRoutes);
 app.use("/api/v1/admin/order", adminOrderRoutes);
 app.use("/api/v1/admin/permissions", permissionRoutes);
+app.use("/api/v1/admin/dashboard", adminDashboardRoutes);
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
