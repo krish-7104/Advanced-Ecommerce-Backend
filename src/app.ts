@@ -46,6 +46,17 @@ app.post(
 app.use(express.json());
 app.use(cookieParser());
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(
+      `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`,
+    );
+  });
+  next();
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });

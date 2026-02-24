@@ -4,6 +4,7 @@ import {
   getAllProductsService,
   getProductByIdService,
   getProductBySlugService,
+  getProductsByCategorySlugService,
 } from "./product.service";
 import ApiResponse from "../../../../utils/ApiResponse";
 import { GetAllProductsQueryParams } from "./product.types";
@@ -25,8 +26,8 @@ export const getAllProductsController = async (req: Request, res: Response) => {
       200,
       products?.data,
       "Products get successfully!",
-      products?.pagination
-    )
+      products?.pagination,
+    ),
   );
 };
 
@@ -39,7 +40,10 @@ export const getProductByIdController = async (req: Request, res: Response) => {
   res.send(new ApiResponse(200, Product, "Product get successfully!"));
 };
 
-export const getProductBySlugController = async (req: Request, res: Response) => {
+export const getProductBySlugController = async (
+  req: Request,
+  res: Response,
+) => {
   const { slug } = req.params;
   if (!slug) {
     throw new ApiError(400, "Product slug is required!");
@@ -48,3 +52,14 @@ export const getProductBySlugController = async (req: Request, res: Response) =>
   res.send(new ApiResponse(200, product, "Product retrieved successfully!"));
 };
 
+export const getProductsByCategorySlugController = async (
+  req: Request,
+  res: Response,
+) => {
+  const { slug } = req.params;
+  if (!slug) {
+    throw new ApiError(400, "Category Slug is required!");
+  }
+  const product = await getProductsByCategorySlugService(slug);
+  res.send(new ApiResponse(200, product, "Product retrieved successfully!"));
+};

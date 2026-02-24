@@ -244,3 +244,54 @@ export const getAllProductsService = async ({
     throw new ApiError(500, error?.message || "Something went wrong");
   }
 };
+
+export const getProductsByCategorySlugService = async (slug: string) => {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        category: {
+          parent: {
+            slug: slug,
+          },
+        },
+      },
+      include: {
+        category: true,
+        variants: true,
+        _count: {
+          select: {
+            variants: true,
+          },
+        },
+      },
+    });
+
+    if (!products.length) {
+      throw new ApiError(404, "Products not found!");
+    }
+
+    const formattedProducts = await Promise.all(
+      products.map(async (product) => {
+        const assetsPayload = await addAssetToPayload(
+          product.id,
+          AssetOwner.PRODUCT_IMAGE,
+          true,
+        );
+
+        return {
+          ...product,
+          ...assetsPayload,
+          attributesSchema:
+            typeof product.attributesSchema === "string"
+              ? JSON.parse(product.attributesSchema)
+              : product.attributesSchema || {},
+        };
+      }),
+    );
+
+    return formattedProducts;
+  } catch (error: any) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(500, error?.message || "Something Went Wrong");
+  }
+};
