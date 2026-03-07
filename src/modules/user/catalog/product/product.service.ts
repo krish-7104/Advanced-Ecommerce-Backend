@@ -11,7 +11,14 @@ export const getProductByIdService = async (id: string) => {
       where: { id },
       include: {
         category: true,
-        variants: true,
+        variants: {
+          include: {
+            reviews: {
+              where: { isVisible: true },
+              include: { votes: true },
+            },
+          },
+        },
         _count: {
           select: {
             variants: true,
@@ -61,6 +68,10 @@ export const getProductBySlugService = async (slug: string) => {
             isDefault: true,
             attributes: true,
             createdAt: true,
+            reviews: {
+              where: { isVisible: true },
+              include: { votes: true },
+            },
           },
           orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
         },
@@ -183,6 +194,10 @@ export const getAllProductsService = async ({
           mrp: true,
           stockAvailable: true,
           createdAt: true,
+          reviews: {
+            where: { isVisible: true },
+            include: { votes: true },
+          },
           product: {
             select: {
               id: true,
@@ -257,7 +272,14 @@ export const getProductsByCategorySlugService = async (slug: string) => {
       },
       include: {
         category: true,
-        variants: true,
+        variants: {
+          include: {
+            reviews: {
+              where: { isVisible: true },
+              include: { votes: true },
+            },
+          },
+        },
         _count: {
           select: {
             variants: true,

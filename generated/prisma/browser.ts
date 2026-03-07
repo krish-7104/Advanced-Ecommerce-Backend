@@ -92,3 +92,13 @@ export type AdminAuditLog = Prisma.AdminAuditLogModel
  * 
  */
 export type Asset = Prisma.AssetModel
+/**
+ * Model Reviews
+ * 
+ */
+export type Reviews = Prisma.ReviewsModel
+/**
+ * Model ReviewVotes
+ * 
+ */
+export type ReviewVotes = Prisma.ReviewVotesModel

@@ -65,7 +65,9 @@ export const ModelName = {
   AdminUserToken: 'AdminUserToken',
   Permission: 'Permission',
   AdminAuditLog: 'AdminAuditLog',
-  Asset: 'Asset'
+  Asset: 'Asset',
+  Reviews: 'Reviews',
+  ReviewVotes: 'ReviewVotes'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -303,6 +305,34 @@ export const AssetScalarFieldEnum = {
 } as const
 
 export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
+
+
+export const ReviewsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  variantId: 'variantId',
+  rating: 'rating',
+  title: 'title',
+  comment: 'comment',
+  isVerified: 'isVerified',
+  isVisible: 'isVisible',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReviewsScalarFieldEnum = (typeof ReviewsScalarFieldEnum)[keyof typeof ReviewsScalarFieldEnum]
+
+
+export const ReviewVotesScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  reviewId: 'reviewId',
+  isHelpful: 'isHelpful',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReviewVotesScalarFieldEnum = (typeof ReviewVotesScalarFieldEnum)[keyof typeof ReviewVotesScalarFieldEnum]
 
 
 export const SortOrder = {

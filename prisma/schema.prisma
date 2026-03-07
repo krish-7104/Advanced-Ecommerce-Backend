@@ -33,6 +33,8 @@ model User {
   updatedAt DateTime   @updatedAt
   cartItems CartItem[]
   orders    Order[]
+  reviews Reviews[]
+  reviewVotes ReviewVotes[]
 }
 
 model Address {
@@ -137,6 +139,7 @@ model ProductVariant {
   updatedAt  DateTime    @updatedAt
   cartItems  CartItem[]
   orderItems OrderItem[]
+  reviews Reviews[]
 
   @@index([productId])
   @@index([price])
@@ -325,3 +328,35 @@ enum AssetOwner {
   CATEGORY_IMAGE
 }
 
+model Reviews {
+  id         String   @id @default(cuid())
+  userId     String
+  variantId  String
+  rating     Int      
+  title      String?
+  comment    String
+  isVerified Boolean  @default(false)
+  isVisible  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  votes ReviewVotes[]
+
+  user       User           @relation(fields: [userId], references: [id])
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
+}
+
+model ReviewVotes {
+  id String @id @default(cuid())
+  userId String
+  reviewId String
+  isHelpful Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  review Reviews @relation(fields: [reviewId], references: [id])
+
+  @@unique([userId, reviewId])
+  @@index([userId])
+  @@index([reviewId])
+}

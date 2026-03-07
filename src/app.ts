@@ -15,6 +15,7 @@ import userCartRoutes from "./modules/user/cart/cart.route.js";
 import userWishlistRoutes from "./modules/user/cart/wishlist.route.js";
 import userOrderRoutes from "./modules/user/order/order.route.js";
 import userPaymentRoutes from "./modules/user/payment/payment.route.js";
+import userReviewRoutes from "./modules/user/review/review.routes.js";
 
 // Routes - Admin
 import categoryRoutes from "./modules/admin/catalog/category/category.route.js";
@@ -27,6 +28,7 @@ import adminAddressRoutes from "./modules/admin/addresses/address.route.js";
 import adminOrderRoutes from "./modules/admin/order/order.route.js";
 import permissionRoutes from "./modules/admin/permissions/permission.route.js";
 import adminDashboardRoutes from "./modules/admin/dashboard/dashboard.routes.js";
+import adminReviewRoutes from "./modules/admin/review/review.routes.js";
 
 // Routes - Reference
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
@@ -83,6 +85,7 @@ app.use("/api/v1/users/cart", userCartRoutes);
 app.use("/api/v1/users/wishlist", userWishlistRoutes);
 app.use("/api/v1/users/order", userOrderRoutes);
 app.use("/api/v1/users/payment", userPaymentRoutes);
+app.use("/api/v1/users/review", userReviewRoutes);
 
 // Admin
 app.use("/api/v1/admin/category", categoryRoutes);
@@ -96,6 +99,7 @@ app.use("/api/v1/admin/addresses", adminAddressRoutes);
 app.use("/api/v1/admin/order", adminOrderRoutes);
 app.use("/api/v1/admin/permissions", permissionRoutes);
 app.use("/api/v1/admin/dashboard", adminDashboardRoutes);
+app.use("/api/v1/admin/review", adminReviewRoutes);
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
