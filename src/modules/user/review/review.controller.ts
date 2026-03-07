@@ -4,6 +4,8 @@ import {
   addReviewToVariantService,
   getVariantReviewsService,
   getUserReviewsService,
+  updateReviewService,
+  deleteReviewService,
 } from "./review.service";
 
 export const addReviewToVariantController = async (
@@ -45,4 +47,26 @@ export const getUserReviewsController = async (req: Request, res: Response) => {
   res
     .status(200)
     .json(new ApiResponse(200, reviews, "User reviews fetched Successfully"));
+};
+
+export const updateReviewController = async (req: Request, res: Response) => {
+  const { reviewId } = req.params;
+  const userId = req.user?.userId;
+
+  const review = await updateReviewService(reviewId, userId!, req.body);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, review, "Review updated Successfully"));
+};
+
+export const deleteReviewController = async (req: Request, res: Response) => {
+  const { reviewId } = req.params;
+  const userId = req.user?.userId;
+
+  await deleteReviewService(reviewId, userId!);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Review deleted Successfully"));
 };

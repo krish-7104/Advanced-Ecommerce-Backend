@@ -76,3 +76,24 @@ export const toggleReviewVisibilityService = async (reviewId: string) => {
     throw new ApiError(500, err?.message || "Error toggling review visibility");
   }
 };
+
+export const deleteReviewAdminService = async (reviewId: string) => {
+  try {
+    const review = await prisma.reviews.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new ApiError(404, "Review not found");
+    }
+
+    await prisma.reviews.delete({
+      where: { id: reviewId },
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(500, err?.message || "Error deleting review");
+  }
+};

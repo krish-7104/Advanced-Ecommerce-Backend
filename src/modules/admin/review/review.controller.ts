@@ -3,6 +3,7 @@ import ApiResponse from "../../../utils/ApiResponse";
 import {
   getAllReviewsAdminService,
   toggleReviewVisibilityService,
+  deleteReviewAdminService,
 } from "./review.service";
 
 export const getAllReviewsAdminController = async (
@@ -32,4 +33,16 @@ export const toggleReviewVisibilityController = async (
     .json(
       new ApiResponse(200, review, "Review visibility toggled Successfully"),
     );
+};
+
+export const deleteReviewAdminController = async (
+  req: Request,
+  res: Response,
+) => {
+  const { reviewId } = req.params;
+  await deleteReviewAdminService(reviewId);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Review deleted Successfully"));
 };
