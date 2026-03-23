@@ -29,6 +29,7 @@ import adminOrderRoutes from "./modules/admin/order/order.route.js";
 import permissionRoutes from "./modules/admin/permissions/permission.route.js";
 import adminDashboardRoutes from "./modules/admin/dashboard/dashboard.routes.js";
 import adminReviewRoutes from "./modules/admin/review/review.routes.js";
+import adminAuditLogsRoutes from "./modules/admin/audit-logs/audit-logs.routes.js";
 
 // Routes - Reference
 import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.route.js";
@@ -100,6 +101,7 @@ app.use("/api/v1/admin/order", adminOrderRoutes);
 app.use("/api/v1/admin/permissions", permissionRoutes);
 app.use("/api/v1/admin/dashboard", adminDashboardRoutes);
 app.use("/api/v1/admin/review", adminReviewRoutes);
+app.use("/api/v1/admin/audit-logs", adminAuditLogsRoutes);
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
