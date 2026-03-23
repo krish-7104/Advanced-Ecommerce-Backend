@@ -30,8 +30,6 @@ export type AdminAuditLogMinAggregateOutputType = {
   entity: string | null
   entityId: string | null
   action: $Enums.AuditAction | null
-  ipAddress: string | null
-  userAgent: string | null
   createdAt: Date | null
 }
 
@@ -41,8 +39,6 @@ export type AdminAuditLogMaxAggregateOutputType = {
   entity: string | null
   entityId: string | null
   action: $Enums.AuditAction | null
-  ipAddress: string | null
-  userAgent: string | null
   createdAt: Date | null
 }
 
@@ -54,8 +50,6 @@ export type AdminAuditLogCountAggregateOutputType = {
   action: number
   beforeData: number
   afterData: number
-  ipAddress: number
-  userAgent: number
   createdAt: number
   _all: number
 }
@@ -67,8 +61,6 @@ export type AdminAuditLogMinAggregateInputType = {
   entity?: true
   entityId?: true
   action?: true
-  ipAddress?: true
-  userAgent?: true
   createdAt?: true
 }
 
@@ -78,8 +70,6 @@ export type AdminAuditLogMaxAggregateInputType = {
   entity?: true
   entityId?: true
   action?: true
-  ipAddress?: true
-  userAgent?: true
   createdAt?: true
 }
 
@@ -91,8 +81,6 @@ export type AdminAuditLogCountAggregateInputType = {
   action?: true
   beforeData?: true
   afterData?: true
-  ipAddress?: true
-  userAgent?: true
   createdAt?: true
   _all?: true
 }
@@ -177,8 +165,6 @@ export type AdminAuditLogGroupByOutputType = {
   action: $Enums.AuditAction
   beforeData: runtime.JsonValue | null
   afterData: runtime.JsonValue | null
-  ipAddress: string | null
-  userAgent: string | null
   createdAt: Date
   _count: AdminAuditLogCountAggregateOutputType | null
   _min: AdminAuditLogMinAggregateOutputType | null
@@ -211,8 +197,6 @@ export type AdminAuditLogWhereInput = {
   action?: Prisma.EnumAuditActionFilter<"AdminAuditLog"> | $Enums.AuditAction
   beforeData?: Prisma.JsonNullableFilter<"AdminAuditLog">
   afterData?: Prisma.JsonNullableFilter<"AdminAuditLog">
-  ipAddress?: Prisma.StringNullableFilter<"AdminAuditLog"> | string | null
-  userAgent?: Prisma.StringNullableFilter<"AdminAuditLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"AdminAuditLog"> | Date | string
   admin?: Prisma.XOR<Prisma.AdminUserScalarRelationFilter, Prisma.AdminUserWhereInput>
 }
@@ -225,8 +209,6 @@ export type AdminAuditLogOrderByWithRelationInput = {
   action?: Prisma.SortOrder
   beforeData?: Prisma.SortOrderInput | Prisma.SortOrder
   afterData?: Prisma.SortOrderInput | Prisma.SortOrder
-  ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
-  userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   admin?: Prisma.AdminUserOrderByWithRelationInput
 }
@@ -242,8 +224,6 @@ export type AdminAuditLogWhereUniqueInput = Prisma.AtLeast<{
   action?: Prisma.EnumAuditActionFilter<"AdminAuditLog"> | $Enums.AuditAction
   beforeData?: Prisma.JsonNullableFilter<"AdminAuditLog">
   afterData?: Prisma.JsonNullableFilter<"AdminAuditLog">
-  ipAddress?: Prisma.StringNullableFilter<"AdminAuditLog"> | string | null
-  userAgent?: Prisma.StringNullableFilter<"AdminAuditLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"AdminAuditLog"> | Date | string
   admin?: Prisma.XOR<Prisma.AdminUserScalarRelationFilter, Prisma.AdminUserWhereInput>
 }, "id">
@@ -256,8 +236,6 @@ export type AdminAuditLogOrderByWithAggregationInput = {
   action?: Prisma.SortOrder
   beforeData?: Prisma.SortOrderInput | Prisma.SortOrder
   afterData?: Prisma.SortOrderInput | Prisma.SortOrder
-  ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
-  userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.AdminAuditLogCountOrderByAggregateInput
   _max?: Prisma.AdminAuditLogMaxOrderByAggregateInput
@@ -275,8 +253,6 @@ export type AdminAuditLogScalarWhereWithAggregatesInput = {
   action?: Prisma.EnumAuditActionWithAggregatesFilter<"AdminAuditLog"> | $Enums.AuditAction
   beforeData?: Prisma.JsonNullableWithAggregatesFilter<"AdminAuditLog">
   afterData?: Prisma.JsonNullableWithAggregatesFilter<"AdminAuditLog">
-  ipAddress?: Prisma.StringNullableWithAggregatesFilter<"AdminAuditLog"> | string | null
-  userAgent?: Prisma.StringNullableWithAggregatesFilter<"AdminAuditLog"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AdminAuditLog"> | Date | string
 }
 
@@ -287,8 +263,6 @@ export type AdminAuditLogCreateInput = {
   action: $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: string | null
-  userAgent?: string | null
   createdAt?: Date | string
   admin: Prisma.AdminUserCreateNestedOneWithoutLogsInput
 }
@@ -301,8 +275,6 @@ export type AdminAuditLogUncheckedCreateInput = {
   action: $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: string | null
-  userAgent?: string | null
   createdAt?: Date | string
 }
 
@@ -313,8 +285,6 @@ export type AdminAuditLogUpdateInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   admin?: Prisma.AdminUserUpdateOneRequiredWithoutLogsNestedInput
 }
@@ -327,8 +297,6 @@ export type AdminAuditLogUncheckedUpdateInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -340,8 +308,6 @@ export type AdminAuditLogCreateManyInput = {
   action: $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: string | null
-  userAgent?: string | null
   createdAt?: Date | string
 }
 
@@ -352,8 +318,6 @@ export type AdminAuditLogUpdateManyMutationInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -365,8 +329,6 @@ export type AdminAuditLogUncheckedUpdateManyInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -388,8 +350,6 @@ export type AdminAuditLogCountOrderByAggregateInput = {
   action?: Prisma.SortOrder
   beforeData?: Prisma.SortOrder
   afterData?: Prisma.SortOrder
-  ipAddress?: Prisma.SortOrder
-  userAgent?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -399,8 +359,6 @@ export type AdminAuditLogMaxOrderByAggregateInput = {
   entity?: Prisma.SortOrder
   entityId?: Prisma.SortOrder
   action?: Prisma.SortOrder
-  ipAddress?: Prisma.SortOrder
-  userAgent?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -410,8 +368,6 @@ export type AdminAuditLogMinOrderByAggregateInput = {
   entity?: Prisma.SortOrder
   entityId?: Prisma.SortOrder
   action?: Prisma.SortOrder
-  ipAddress?: Prisma.SortOrder
-  userAgent?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -468,8 +424,6 @@ export type AdminAuditLogCreateWithoutAdminInput = {
   action: $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: string | null
-  userAgent?: string | null
   createdAt?: Date | string
 }
 
@@ -480,8 +434,6 @@ export type AdminAuditLogUncheckedCreateWithoutAdminInput = {
   action: $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: string | null
-  userAgent?: string | null
   createdAt?: Date | string
 }
 
@@ -522,8 +474,6 @@ export type AdminAuditLogScalarWhereInput = {
   action?: Prisma.EnumAuditActionFilter<"AdminAuditLog"> | $Enums.AuditAction
   beforeData?: Prisma.JsonNullableFilter<"AdminAuditLog">
   afterData?: Prisma.JsonNullableFilter<"AdminAuditLog">
-  ipAddress?: Prisma.StringNullableFilter<"AdminAuditLog"> | string | null
-  userAgent?: Prisma.StringNullableFilter<"AdminAuditLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"AdminAuditLog"> | Date | string
 }
 
@@ -534,8 +484,6 @@ export type AdminAuditLogCreateManyAdminInput = {
   action: $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: string | null
-  userAgent?: string | null
   createdAt?: Date | string
 }
 
@@ -546,8 +494,6 @@ export type AdminAuditLogUpdateWithoutAdminInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -558,8 +504,6 @@ export type AdminAuditLogUncheckedUpdateWithoutAdminInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -570,8 +514,6 @@ export type AdminAuditLogUncheckedUpdateManyWithoutAdminInput = {
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   beforeData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   afterData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -585,8 +527,6 @@ export type AdminAuditLogSelect<ExtArgs extends runtime.Types.Extensions.Interna
   action?: boolean
   beforeData?: boolean
   afterData?: boolean
-  ipAddress?: boolean
-  userAgent?: boolean
   createdAt?: boolean
   admin?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["adminAuditLog"]>
@@ -599,8 +539,6 @@ export type AdminAuditLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   action?: boolean
   beforeData?: boolean
   afterData?: boolean
-  ipAddress?: boolean
-  userAgent?: boolean
   createdAt?: boolean
   admin?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["adminAuditLog"]>
@@ -613,8 +551,6 @@ export type AdminAuditLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   action?: boolean
   beforeData?: boolean
   afterData?: boolean
-  ipAddress?: boolean
-  userAgent?: boolean
   createdAt?: boolean
   admin?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["adminAuditLog"]>
@@ -627,12 +563,10 @@ export type AdminAuditLogSelectScalar = {
   action?: boolean
   beforeData?: boolean
   afterData?: boolean
-  ipAddress?: boolean
-  userAgent?: boolean
   createdAt?: boolean
 }
 
-export type AdminAuditLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "adminId" | "entity" | "entityId" | "action" | "beforeData" | "afterData" | "ipAddress" | "userAgent" | "createdAt", ExtArgs["result"]["adminAuditLog"]>
+export type AdminAuditLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "adminId" | "entity" | "entityId" | "action" | "beforeData" | "afterData" | "createdAt", ExtArgs["result"]["adminAuditLog"]>
 export type AdminAuditLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   admin?: boolean | Prisma.AdminUserDefaultArgs<ExtArgs>
 }
@@ -656,8 +590,6 @@ export type $AdminAuditLogPayload<ExtArgs extends runtime.Types.Extensions.Inter
     action: $Enums.AuditAction
     beforeData: runtime.JsonValue | null
     afterData: runtime.JsonValue | null
-    ipAddress: string | null
-    userAgent: string | null
     createdAt: Date
   }, ExtArgs["result"]["adminAuditLog"]>
   composites: {}
@@ -1090,8 +1022,6 @@ export interface AdminAuditLogFieldRefs {
   readonly action: Prisma.FieldRef<"AdminAuditLog", 'AuditAction'>
   readonly beforeData: Prisma.FieldRef<"AdminAuditLog", 'Json'>
   readonly afterData: Prisma.FieldRef<"AdminAuditLog", 'Json'>
-  readonly ipAddress: Prisma.FieldRef<"AdminAuditLog", 'String'>
-  readonly userAgent: Prisma.FieldRef<"AdminAuditLog", 'String'>
   readonly createdAt: Prisma.FieldRef<"AdminAuditLog", 'DateTime'>
 }
     

@@ -7,9 +7,9 @@ import { GetAllCategoriesQueryParams } from "./category.types";
 import fs from "fs";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 
-export const createCategorySerice = async (
+export const createCategoryService = async (
   payload: CategoryModel,
-  image: Express.Multer.File
+  image: Express.Multer.File,
 ) => {
   try {
     const { name, description, slug, parentId, level } = payload;
@@ -59,7 +59,7 @@ export const createCategorySerice = async (
       category.id,
       AssetOwner.CATEGORY_IMAGE,
       0,
-      true
+      true,
     );
 
     return {
@@ -70,6 +70,7 @@ export const createCategorySerice = async (
         isPrimary: categoryAsset.isPrimary,
         url: `${process.env.MEDIA_URL}/${categoryAsset.path}`,
       },
+      afterCreate: category,
     };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
@@ -97,7 +98,7 @@ export const getCategoryByIdService = async (id: string) => {
     const categoryAsset = await addAssetToPayload(
       category.id,
       AssetOwner.CATEGORY_IMAGE,
-      true
+      true,
     );
 
     return { ...category, image: categoryAsset?.images?.[0] || null };
@@ -110,8 +111,14 @@ export const getCategoryByIdService = async (id: string) => {
 export const updateCategoryService = async (
   id: string,
   payload: CategoryModel,
-  image: Express.Multer.File
+  image: Express.Multer.File,
 ) => {
+  const beforeCategory = await prisma.category.findFirst({
+    where: {
+      id: id,
+    },
+  });
+
   const prismaTx = prisma.$transaction.bind(prisma);
   try {
     const result = await prismaTx(async (tx) => {
@@ -149,7 +156,7 @@ export const updateCategoryService = async (
           category.id,
           AssetOwner.CATEGORY_IMAGE,
           0,
-          true
+          true,
         );
         categoryAsset = {
           id: uploadedAsset.id,
@@ -159,10 +166,23 @@ export const updateCategoryService = async (
         };
       }
 
-      return categoryAsset ? { ...category, image: categoryAsset } : category;
+      return categoryAsset
+        ? {
+            ...category,
+            image: categoryAsset,
+            containsImage: true,
+          }
+        : {
+            ...category,
+            image: null,
+            containsImage: false,
+          };
     });
 
-    return result;
+    return {
+      ...result,
+      beforeCategory,
+    };
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -201,7 +221,7 @@ export const deleteCategoryService = async (id: string) => {
 };
 
 export const getAllCategoriesService = async (
-  queryParams: GetAllCategoriesQueryParams
+  queryParams: GetAllCategoriesQueryParams,
 ) => {
   const { level } = queryParams;
 
@@ -228,7 +248,7 @@ export const getAllCategoriesService = async (
     const payload = await Promise.all(
       category.map((category: any) => {
         return addAssetToPayload(category.id, AssetOwner.CATEGORY_IMAGE, true);
-      })
+      }),
     );
 
     return category.map((category: any, index: number) => ({

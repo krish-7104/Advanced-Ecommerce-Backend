@@ -282,8 +282,6 @@ export const AdminAuditLogScalarFieldEnum = {
   action: 'action',
   beforeData: 'beforeData',
   afterData: 'afterData',
-  ipAddress: 'ipAddress',
-  userAgent: 'userAgent',
   createdAt: 'createdAt'
 } as const
 
