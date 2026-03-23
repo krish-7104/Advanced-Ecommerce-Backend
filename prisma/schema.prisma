@@ -291,9 +291,6 @@ model AdminAuditLog {
   beforeData Json?
   afterData  Json?
 
-  ipAddress String?
-  userAgent String?
-
   createdAt DateTime @default(now())
 
   @@index([entity, entityId])
