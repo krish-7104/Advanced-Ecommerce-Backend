@@ -151,6 +151,28 @@ export const PERMISSIONS_CONFIG: PermissionGroup[] = [
       },
     ],
   },
+  {
+    section: "Catalog",
+    resource: "reviews",
+    label: "Reviews",
+    permissions: [
+      {
+        code: "reviews.view",
+        action: "view",
+        description: "View product reviews",
+      },
+      {
+        code: "reviews.update",
+        action: "update",
+        description: "Update product reviews",
+      },
+      {
+        code: "reviews.delete",
+        action: "delete",
+        description: "Delete product reviews",
+      },
+    ],
+  },
 
   // ─── Operations ─────────────────────────────────────────────────────────
   {
