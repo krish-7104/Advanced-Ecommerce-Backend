@@ -129,6 +129,11 @@ export const getAllProductsService = async ({
   limit,
   featured,
   search,
+  categoryId,
+  minPrice,
+  maxPrice,
+  inStock,
+  sort,
 }: GetAllProductsQueryParams) => {
   try {
     const shouldPaginate =
@@ -145,6 +150,10 @@ export const getAllProductsService = async ({
     const productWhere: Prisma.ProductWhereInput = {
       isActive: true,
     };
+
+    if (categoryId) {
+      productWhere.categoryId = categoryId;
+    }
 
     if (typeof featured === "boolean") {
       productWhere.isFeatured = featured;
@@ -181,12 +190,27 @@ export const getAllProductsService = async ({
       product: productWhere,
     };
 
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) where.price.gte = minPrice;
+      if (maxPrice !== undefined) where.price.lte = maxPrice;
+    }
+
+    if (inStock === true) {
+      where.stockAvailable = { gt: 0 };
+    }
+
+    let orderBy: Prisma.ProductVariantOrderByWithRelationInput | Prisma.ProductVariantOrderByWithRelationInput[] = { createdAt: "desc" };
+    if (sort === "price-asc") orderBy = { price: "asc" };
+    else if (sort === "price-desc") orderBy = { price: "desc" };
+    else if (sort === "name") orderBy = { product: { name: "asc" } };
+
     const [products, total] = await Promise.all([
       prisma.productVariant.findMany({
         skip,
         take: safeLimit,
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy,
         select: {
           id: true,
           sku: true,

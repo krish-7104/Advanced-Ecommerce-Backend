@@ -10,16 +10,22 @@ import ApiResponse from "../../../../utils/ApiResponse";
 import { GetAllProductsQueryParams } from "./product.types";
 
 export const getAllProductsController = async (req: Request, res: Response) => {
-  const { page, limit, featured, search } =
+  const { page, limit, featured, search, categoryId, minPrice, maxPrice, inStock, sort } =
     req.query as GetAllProductsQueryParams;
 
   const featuredFlag = featured && featured === "true" ? true : undefined;
+  const inStockFlag = inStock === "true" || inStock === true ? true : undefined;
 
   const products = await getAllProductsService({
-    page: Number(page),
-    limit: Number(limit),
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined,
     featured: featuredFlag,
     search,
+    categoryId,
+    minPrice: minPrice ? Number(minPrice) : undefined,
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
+    inStock: inStockFlag,
+    sort,
   });
   res.send(
     new ApiResponse(

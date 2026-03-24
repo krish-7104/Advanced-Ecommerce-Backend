@@ -293,7 +293,7 @@ export const refreshTokenService = async (refreshToken: string) => {
         });
       }
 
-      throw new ApiError(401, "Invalid refresh token");
+      throw new ApiError(403, "Invalid refresh token");
     }
 
     // Expired
