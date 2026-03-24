@@ -1,14 +1,3 @@
-/**
- * Single source of truth for all admin permissions.
- *
- * This config is used:
- *   1. By the seeder (`prisma/seeds/permission.seed.ts`) to populate the Permission table.
- *   2. By the `/permissions/config` API endpoint so the frontend can render
- *      a grouped, human-readable permission picker when creating/editing admins.
- *
- * Format of each permission code: `resource.action`  (e.g. "orders.create")
- */
-
 export interface PermissionEntry {
   code: string;
   action: string;
@@ -16,14 +5,13 @@ export interface PermissionEntry {
 }
 
 export interface PermissionGroup {
-  section: string; // Display section heading (mirrors navigationConfig sections)
-  resource: string; // Resource key used in permission codes
-  label: string; // Human-readable resource label
+  section: string;
+  resource: string;
+  label: string;
   permissions: PermissionEntry[];
 }
 
 export const PERMISSIONS_CONFIG: PermissionGroup[] = [
-  // ─── General ────────────────────────────────────────────────────────────
   {
     section: "General",
     resource: "dashboard",
@@ -42,7 +30,6 @@ export const PERMISSIONS_CONFIG: PermissionGroup[] = [
     ],
   },
 
-  // ─── Catalog ────────────────────────────────────────────────────────────
   {
     section: "Catalog",
     resource: "categories",
@@ -174,7 +161,6 @@ export const PERMISSIONS_CONFIG: PermissionGroup[] = [
     ],
   },
 
-  // ─── Operations ─────────────────────────────────────────────────────────
   {
     section: "Operations",
     resource: "orders",
@@ -219,8 +205,6 @@ export const PERMISSIONS_CONFIG: PermissionGroup[] = [
       },
     ],
   },
-
-  // ─── Access Control ──────────────────────────────────────────────────────
   {
     section: "Access Control",
     resource: "admins",
@@ -248,8 +232,6 @@ export const PERMISSIONS_CONFIG: PermissionGroup[] = [
       },
     ],
   },
-
-  // ─── System ──────────────────────────────────────────────────────────────
   {
     section: "System",
     resource: "logs",
@@ -260,28 +242,10 @@ export const PERMISSIONS_CONFIG: PermissionGroup[] = [
         action: "view",
         description: "View audit logs",
       },
-      {
-        code: "logs.create",
-        action: "create",
-        description: "Create log entries",
-      },
-      {
-        code: "logs.update",
-        action: "update",
-        description: "Update log entries",
-      },
-      {
-        code: "logs.delete",
-        action: "delete",
-        description: "Delete log entries",
-      },
     ],
   },
 ];
 
-/**
- * Flat list of all permissions – useful for seeding the database.
- */
 export const FLAT_PERMISSIONS = PERMISSIONS_CONFIG.flatMap((group) =>
   group.permissions.map((p) => ({
     resource: group.resource,
