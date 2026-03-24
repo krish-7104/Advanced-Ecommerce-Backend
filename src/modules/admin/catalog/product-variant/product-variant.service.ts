@@ -207,6 +207,12 @@ export const updateProductVariantService = async ({
   coverImageIndex,
   coverImageId,
 }: UpdateVariantInputTypes) => {
+  const beforeProductVariant = await prisma.productVariant.findFirst({
+    where: {
+      id: variantId,
+    },
+  });
+
   return prisma.$transaction(async (tx) => {
     const variant = await tx.productVariant.findUnique({
       where: { id: variantId },
@@ -259,7 +265,11 @@ export const updateProductVariantService = async ({
       });
 
       for (const asset of assets) {
-        if (asset.path && !asset.path.startsWith("http") && fs.existsSync(asset.path)) {
+        if (
+          asset.path &&
+          !asset.path.startsWith("http") &&
+          fs.existsSync(asset.path)
+        ) {
           fs.unlinkSync(asset.path);
         }
         await tx.asset.delete({ where: { id: asset.id } });
@@ -361,6 +371,7 @@ export const updateProductVariantService = async ({
           ? JSON.parse(updatedVariant.attributes)
           : updatedVariant.attributes || {},
       images: assets,
+      beforeProductVariant,
     };
   });
 };

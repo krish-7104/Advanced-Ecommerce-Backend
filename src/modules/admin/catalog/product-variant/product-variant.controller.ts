@@ -8,6 +8,7 @@ import {
   updateProductVariantService,
 } from "./product-variant.service";
 import ApiResponse from "../../../../utils/ApiResponse";
+import { addToAuditLog } from "../../../../helper/addToAuditLog";
 
 export const createProductVariantController = async (
   req: Request,
@@ -22,6 +23,7 @@ export const createProductVariantController = async (
     productId,
     imageUrls,
   } = req.body;
+  const user = req.user;
 
   const uploadedImages = (req.files as any)?.images || [];
 
@@ -65,6 +67,15 @@ export const createProductVariantController = async (
     coverImageIndex,
   );
 
+  addToAuditLog(
+    "CREATE",
+    null,
+    variant,
+    user?.userId,
+    variant.id,
+    "Product_Variant",
+  );
+
   res
     .status(201)
     .json(new ApiResponse(201, variant, "Variant created successfully"));
@@ -97,6 +108,7 @@ export const updateProductVariantController = async (
   res: Response,
 ) => {
   const { id } = req.params;
+  const user = req.user;
 
   if (!id) {
     throw new ApiError(400, "Product Variant ID is required");
@@ -124,7 +136,7 @@ export const updateProductVariantController = async (
     }
   }
 
-  const images: (Express.Multer.File | string)[] = [
+  const uploadImages: (Express.Multer.File | string)[] = [
     ...uploadedImages,
     ...urlImages,
   ];
@@ -152,13 +164,25 @@ export const updateProductVariantController = async (
   const updatedVariant = await updateProductVariantService({
     variantId: id,
     variantPayload,
-    newImages: images,
+    newImages: uploadImages,
     deleteImageIds: parsedDeleteImageIds,
     reorderImages: parsedReorderImages,
     newImageOrder: parsedNewImageOrder,
     coverImageIndex,
     coverImageId,
   });
+
+  const { beforeProductVariant, images, ...afterProductVariant } =
+    updatedVariant;
+
+  addToAuditLog(
+    "UPDATE",
+    beforeProductVariant,
+    afterProductVariant,
+    user?.userId,
+    id,
+    "Product_Variant",
+  );
 
   res
     .status(200)
@@ -170,11 +194,22 @@ export const deleteProductVariantController = async (
   res: Response,
 ) => {
   const { id } = req.params;
+  const user = req.user;
 
   if (!id) {
     throw new ApiError(400, "Product Variant ID is required");
   }
 
-  await deleteProductVariantService(id);
+  const productVariant = await deleteProductVariantService(id);
+
+  addToAuditLog(
+    "DELETE",
+    productVariant,
+    null,
+    user?.userId,
+    id,
+    "Product_Variant",
+  );
+
   res.send(new ApiResponse(200, [], "Variant deleted successfully"));
 };
