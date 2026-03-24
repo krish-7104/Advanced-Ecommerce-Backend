@@ -39,8 +39,21 @@ export const getAllReviewsAdminService = async (queryParams: {
       prisma.reviews.count(),
     ]);
 
+    const formattedReviews = reviews.map((item) => {
+      return {
+        ...item,
+        variant: {
+          ...item.variant,
+          attributes:
+            typeof item.variant.attributes === "string"
+              ? JSON.parse(item.variant.attributes)
+              : item.variant.attributes || {},
+        },
+      };
+    });
+
     return {
-      reviews,
+      reviews: formattedReviews,
       pagination: {
         total,
         page,
