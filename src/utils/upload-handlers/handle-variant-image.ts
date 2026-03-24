@@ -7,7 +7,7 @@ export const handleVariantImage = async (
   ownerId: string,
   ownerType: AssetOwner,
   imageSequence: number,
-  isPrimary: boolean = false
+  isPrimary: boolean = false,
 ) => {
   if (typeof image === "string") {
     const url = image.trim();
@@ -16,7 +16,8 @@ export const handleVariantImage = async (
     }
 
     const urlParts = url.split("/");
-    const fileName = urlParts[urlParts.length - 1] || `image-${Date.now()}`;
+    const fileName =
+      urlParts[urlParts.length - 1] + "-" + Date.now() || `image-${Date.now()}`;
 
     const asset = await prisma.asset.create({
       data: {
@@ -37,7 +38,7 @@ export const handleVariantImage = async (
       ownerId,
       ownerType,
       imageSequence,
-      isPrimary
+      isPrimary,
     );
   }
 };
