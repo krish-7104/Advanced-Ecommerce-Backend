@@ -15,7 +15,6 @@ export const addReviewToVariantService = async (
     const order = await prisma.order.findFirst({
       where: {
         userId: userId,
-        status: "DELIVERED",
         items: {
           some: {
             variantId: variantId,
