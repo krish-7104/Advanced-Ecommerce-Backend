@@ -6,343 +6,152 @@ const connectionString = `${process.env.DATABASE_URL}`;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
+const BRANDS = ["Apple", "Samsung", "Sony", "LG", "Dell", "HP", "Nike", "Adidas", "Puma", "IKEA", "Ashley", "Sephora", "Lorex", "Bose", "JBL"];
+const ADJECTIVES = ["Premium", "Pro", "Ultra", "Smart", "Classic", "Modern", "Sleek", "Advanced", "Essential", "Elite", "Compact", "Wireless", "Signature", "Eco"];
+const NOUNS = ["Headphones", "Laptop", "TV", "Speaker", "Phone", "Sneakers", "T-Shirt", "Jacket", "Desk", "Chair", "Monitor", "Watch", "Tablet", "Camera", "Microphone"];
+const COLORS = ["Black", "White", "Silver", "Gray", "Blue", "Red", "Green", "Gold", "Navy"];
+const SIZES = ["S", "M", "L", "XL", "7", "8", "9", "10", "11"];
+
+function generateSlug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 100000);
+}
+
 export async function seedProducts() {
-  console.log("🌱 Seeding categories and products...");
+  console.log("🌱 Seeding large dataset of categories, products, and variants...");
 
   console.log("🧹 Cleaning up existing product and category data...");
   try {
-    // Delete in reverse order of dependencies
     await prisma.cartItem.deleteMany();
     await prisma.orderItem.deleteMany();
+    await prisma.reviewVotes.deleteMany();
+    await prisma.reviews.deleteMany();
     await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
-
     await prisma.category.deleteMany({ where: { NOT: { parentId: null } } });
     await prisma.category.deleteMany();
     console.log("  ✓ Cleanup complete");
   } catch (error) {
-    console.warn(
-      "  ⚠️ Warning: Cleanup encountered an error (might be first run):",
-      error,
-    );
+    console.warn("  ⚠️ Warning: Cleanup encountered an error (might be first run):", error);
   }
 
-  // 1. Create Categories
-  const categories = [
-    {
-      name: "Electronics",
-      slug: "electronics",
-      description: "Gadgets and devices",
-      children: [
-        {
-          name: "Mobile Phones",
-          slug: "mobile-phones",
-          description: "Smartphones and feature phones",
-        },
-        {
-          name: "Laptops",
-          slug: "laptops",
-          description: "High performance laptops",
-        },
-        { name: "Tablets", slug: "tablets", description: "Portable tablets" },
-      ],
-    },
-    {
-      name: "Fashion",
-      slug: "fashion",
-      description: "Clothing and accessories",
-      children: [
-        {
-          name: "Men's Wear",
-          slug: "mens-wear",
-          description: "Clothing for men",
-        },
-        {
-          name: "Women's Wear",
-          slug: "womens-wear",
-          description: "Clothing for women",
-        },
-      ],
-    },
-    {
-      name: "Home",
-      slug: "home",
-      description: "Home appliances and furniture",
-      children: [
-        {
-          name: "Furniture",
-          slug: "furniture",
-          description: "Sofas, beds, and more",
-        },
-        { name: "Decor", slug: "decor", description: "Home decoration items" },
-      ],
-    },
+  // 1. Create Base Categories
+  const baseCategories = [
+    { name: "Electronics", slug: "electronics", children: ["Mobile Phones", "Laptops", "Audio", "Cameras", "Televisions"] },
+    { name: "Fashion", slug: "fashion", children: ["Men's Wear", "Women's Wear", "Footwear", "Accessories"] },
+    { name: "Home & Furniture", slug: "home", children: ["Living Room", "Bedroom", "Office", "Kitchen"] },
   ];
 
-  for (const cat of categories) {
-    const parent = await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: {},
-      create: {
+  const categoryMap = new Map<string, string>(); // category name -> id
+
+  for (const cat of baseCategories) {
+    const parent = await prisma.category.create({
+      data: {
         name: cat.name,
         slug: cat.slug,
-        description: cat.description,
+        description: `All things ${cat.name}`,
         level: 0,
-      },
+      }
     });
     console.log(`  ✓ Category created: ${parent.name}`);
 
     for (const child of cat.children) {
-      await prisma.category.upsert({
-        where: { slug: child.slug },
-        update: {},
-        create: {
-          name: child.name,
-          slug: child.slug,
-          description: child.description,
+      const childDoc = await prisma.category.create({
+        data: {
+          name: child,
+          slug: generateSlug(child),
+          description: `${child} category`,
           parentId: parent.id,
           level: 1,
-        },
+        }
       });
-      console.log(`    ✓ Subcategory created: ${child.name}`);
+      categoryMap.set(childDoc.name, childDoc.id);
+      console.log(`    ✓ Subcategory created: ${childDoc.name}`);
     }
   }
 
-  // 2. Create Products
-  const mobileCategory = await prisma.category.findUnique({
-    where: { slug: "mobile-phones" },
-  });
+  // 2. Generate 150 Products
+  const numProducts = 150;
+  console.log(`\n📦 Generating ${numProducts} products...`);
 
-  if (mobileCategory) {
-    // iPhone 16 Pro
-    const iPhoneAttrs = {
-      color: [
-        "Black Titanium",
-        "Blue Titanium",
-        "Natural Titanium",
-        "White Titanium",
-      ],
-      storage: ["128GB", "256GB", "512GB", "1TB"],
-    };
+  const categoryKeys = Array.from(categoryMap.keys());
 
-    const iPhone = await prisma.product.upsert({
-      where: { slug: "iphone-16-pro" },
-      update: {
-        categoryId: mobileCategory.id,
-        attributesSchema: iPhoneAttrs,
-      },
-      create: {
-        name: "iPhone 16 Pro",
-        slug: "iphone-16-pro",
-        description: "The ultimate iPhone.",
-        categoryId: mobileCategory.id,
-        attributesSchema: iPhoneAttrs,
+  for (let i = 0; i < numProducts; i++) {
+    const brand = BRANDS[Math.floor(Math.random() * BRANDS.length)];
+    const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+    const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+
+    const productName = `${brand} ${adj} ${noun}`;
+    const slug = generateSlug(productName);
+    
+    // Pick a random subcategory
+    const randomCatName = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+    const categoryId = categoryMap.get(randomCatName)!;
+
+    // Determine variant axes
+    const useColor = Math.random() > 0.3; // 70% chance to have color variants
+    const useSize = Math.random() > 0.5; // 50% chance to have size variants
+
+    let availableColors = COLORS.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1);
+    let availableSizes = SIZES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1);
+
+    if (!useColor) availableColors = ["Default"];
+    if (!useSize) availableSizes = ["Standard"];
+
+    const attributesSchema: any = {};
+    if (useColor) attributesSchema.color = availableColors;
+    if (useSize) attributesSchema.size = availableSizes;
+
+    const product = await prisma.product.create({
+      data: {
+        name: productName,
+        slug: slug,
+        description: `Experience the amazing quality of the ${productName} by ${brand}. Designed for excellence and everyday use.`,
+        categoryId: categoryId,
+        attributesSchema: attributesSchema,
         isActive: true,
-        isFeatured: true,
-      },
+        isFeatured: Math.random() > 0.85, // 15% chance to be featured
+      }
     });
-    console.log(`  ✓ Product created: ${iPhone.name}`);
 
-    // Create Variants for iPhone
-    const iPhoneVariants = [
-      {
-        color: "Black Titanium",
-        storage: "128GB",
-        price: 99900,
-        sku: "IP16PRO-BLK-128",
-        isDefault: true,
-      },
-      {
-        color: "Black Titanium",
-        storage: "256GB",
-        price: 109900,
-        sku: "IP16PRO-BLK-256",
-        isDefault: false,
-      },
-      {
-        color: "Blue Titanium",
-        storage: "128GB",
-        price: 99900,
-        sku: "IP16PRO-BLU-128",
-        isDefault: false,
-      },
-      {
-        color: "Natural Titanium",
-        storage: "128GB",
-        price: 99900,
-        sku: "IP16PRO-NAT-128",
-        isDefault: false,
-      },
-    ];
+    // Generate variants for the product
+    let isDefaultAssigned = false;
+    for (const color of availableColors) {
+      for (const size of availableSizes) {
+        const variantAttributes: any = {};
+        if (useColor) variantAttributes.color = color;
+        if (useSize) variantAttributes.size = size;
 
-    for (const v of iPhoneVariants) {
-      // Construct attributes json based on simple key-value
-      const variantAttributes = {
-        color: v.color,
-        storage: v.storage,
-      };
+        const basePrice = Math.floor(Math.random() * 90000) + 999;
+        
+        // Randomly discount some products
+        const isDiscounted = Math.random() > 0.7;
+        const mrp = isDiscounted ? Math.floor(basePrice * 1.25) : basePrice;
 
-      await prisma.productVariant.upsert({
-        where: { sku: v.sku },
-        update: {
-          productId: iPhone.id,
-          attributes: variantAttributes,
-        },
-        create: {
-          productId: iPhone.id,
-          sku: v.sku,
-          price: v.price,
-          stockAvailable: 50,
-          attributes: variantAttributes,
-          isActive: true,
-          isDefault: v.isDefault,
-        },
-      });
-      console.log(`    ✓ Variant created: ${v.sku}`);
+        const variantSku = `SKU-${slug.toUpperCase().substring(0, 6)}-${Math.floor(Math.random() * 1000000)}`;
+
+        await prisma.productVariant.create({
+          data: {
+            productId: product.id,
+            sku: variantSku,
+            price: basePrice,
+            mrp: mrp,
+            stockAvailable: Math.floor(Math.random() * 300),
+            stockSold: Math.floor(Math.random() * 100),
+            attributes: variantAttributes,
+            isActive: true,
+            isDefault: !isDefaultAssigned,
+          }
+        });
+        isDefaultAssigned = true;
+      }
     }
-
-    // Samsung S24 Ultra
-    const s24Attrs = {
-      color: ["Titanium Gray", "Titanium Black", "Titanium Violet"],
-      storage: ["256GB", "512GB", "1TB"],
-    };
-
-    const samsungS24 = await prisma.product.upsert({
-      where: { slug: "samsung-s24-ultra" },
-      update: {
-        categoryId: mobileCategory.id,
-        attributesSchema: s24Attrs,
-      },
-      create: {
-        name: "Samsung Galaxy S24 Ultra",
-        slug: "samsung-s24-ultra",
-        description: "Galaxy AI is here.",
-        categoryId: mobileCategory.id,
-        attributesSchema: s24Attrs,
-        isActive: true,
-        isFeatured: true,
-      },
-    });
-    console.log(`  ✓ Product created: ${samsungS24.name}`);
-
-    const s24Variants = [
-      {
-        color: "Titanium Gray",
-        storage: "256GB",
-        price: 129999,
-        sku: "S24U-GRY-256",
-        isDefault: true,
-      },
-      {
-        color: "Titanium Black",
-        storage: "512GB",
-        price: 139999,
-        sku: "S24U-BLK-512",
-        isDefault: false,
-      },
-    ];
-
-    for (const v of s24Variants) {
-      const variantAttributes = {
-        color: v.color,
-        storage: v.storage,
-      };
-      await prisma.productVariant.upsert({
-        where: { sku: v.sku },
-        update: {
-          productId: samsungS24.id,
-          attributes: variantAttributes,
-        },
-        create: {
-          productId: samsungS24.id,
-          sku: v.sku,
-          price: v.price,
-          stockAvailable: 30,
-          attributes: variantAttributes,
-          isActive: true,
-          isDefault: v.isDefault,
-        },
-      });
-      console.log(`    ✓ Variant created: ${v.sku}`);
+    
+    // Log progress
+    if (i > 0 && i % 25 === 0) {
+      console.log(`    ... ${i} products generated`);
     }
   }
 
-  // 3. Create Fashion Product
-  const mensCategory = await prisma.category.findUnique({
-    where: { slug: "mens-wear" },
-  });
-  if (mensCategory) {
-    const tshirtAttrs = {
-      size: ["S", "M", "L", "XL"],
-      color: ["Black", "White", "Navy"],
-    };
-
-    const tshirt = await prisma.product.upsert({
-      where: { slug: "classic-cotton-tshirt" },
-      update: {
-        categoryId: mensCategory.id,
-        attributesSchema: tshirtAttrs,
-      },
-      create: {
-        name: "Classic Cotton T-Shirt",
-        slug: "classic-cotton-tshirt",
-        description: "Premium cotton essential t-shirt.",
-        categoryId: mensCategory.id,
-        attributesSchema: tshirtAttrs,
-        isActive: true,
-        isFeatured: false,
-      },
-    });
-    console.log(`  ✓ Product created: ${tshirt.name}`);
-
-    const tshirtVariants = [
-      {
-        size: "M",
-        color: "Black",
-        sku: "TSHIRT-M-BLK",
-        price: 1999,
-        isDefault: true,
-      },
-      {
-        size: "L",
-        color: "Black",
-        sku: "TSHIRT-L-BLK",
-        price: 1999,
-        isDefault: false,
-      },
-      {
-        size: "M",
-        color: "White",
-        sku: "TSHIRT-M-WHT",
-        price: 1999,
-        isDefault: false,
-      },
-    ];
-
-    for (const v of tshirtVariants) {
-      const variantAttributes = {
-        size: v.size,
-        color: v.color,
-      };
-      await prisma.productVariant.upsert({
-        where: { sku: v.sku },
-        update: {
-          productId: tshirt.id,
-          attributes: variantAttributes,
-        },
-        create: {
-          productId: tshirt.id,
-          sku: v.sku,
-          price: v.price,
-          stockAvailable: 100,
-          attributes: variantAttributes,
-          isActive: true,
-          isDefault: v.isDefault,
-        },
-      });
-      console.log(`    ✓ Variant created: ${v.sku}`);
-    }
-  }
-
-  console.log("✅ Category and Product seeding completed!\n");
+  console.log(`  ✓ Successfully generated ${numProducts} products with associated variants.`);
+  console.log("✅ Database seeding completed entirely!\n");
 }
