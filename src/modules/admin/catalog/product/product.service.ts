@@ -115,6 +115,12 @@ export const updateProductService = async (
   id: string,
   payload: ProductModel,
 ) => {
+  const beforeProduct = await prisma.product.findFirst({
+    where: {
+      id: id,
+    },
+  });
+
   try {
     if (payload.isActive === true) {
       const variants = await prisma.productVariant.findMany({
@@ -135,6 +141,7 @@ export const updateProductService = async (
       data: { ...payload, attributesSchema: payload.attributesSchema || {} },
     });
     return {
+      beforeProduct,
       ...Product,
       attributesSchema:
         typeof Product.attributesSchema === "string"
