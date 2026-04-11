@@ -4,6 +4,8 @@ import { stripe } from "../../../app";
 import "dotenv/config";
 import Stripe from "stripe";
 import { getOrderByIdService } from "../order/order.service.js";
+import { notifyOrderStatusEmail } from "../../../utils/order-email.js";
+import { OrderStatus } from "../../../../generated/prisma/enums.js";
 type ParsedAttributes = Record<string, string>;
 
 const parseAttributes = (raw: unknown): ParsedAttributes => {
@@ -217,6 +219,8 @@ export const syncCheckoutSessionService = async (
     }),
   ]);
 
+  notifyOrderStatusEmail(orderId, OrderStatus.PAID);
+
   return {
     synced: true,
     alreadyPaid: false,
@@ -270,6 +274,7 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
             where: { id: payment.orderId },
             data: { status: "PAID" },
           });
+          notifyOrderStatusEmail(payment.orderId, OrderStatus.PAID);
         }
 
         break;
@@ -333,6 +338,7 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
               where: { id: fallback.orderId },
               data: { status: "PAID" },
             });
+            notifyOrderStatusEmail(fallback.orderId, OrderStatus.PAID);
           }
           break;
         }
@@ -356,6 +362,8 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
           where: { id: payment.orderId },
           data: { status: "PAID" },
         });
+
+        notifyOrderStatusEmail(payment.orderId, OrderStatus.PAID);
 
         break;
       }

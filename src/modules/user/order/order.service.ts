@@ -1,5 +1,6 @@
 import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
+import { notifyOrderStatusEmail } from "../../../utils/order-email.js";
 import {
   OrderStatus,
   CartItemStatus,
@@ -147,6 +148,8 @@ export const createOrderService = async (
 
     return newOrder;
   });
+
+  notifyOrderStatusEmail(order.id, OrderStatus.PENDING);
 
   return order;
 };
@@ -368,6 +371,8 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
     };
   });
 
+  notifyOrderStatusEmail(orderId, OrderStatus.CANCELLED);
+
   return { ...updatedOrder, items: formattedItems };
 };
 
@@ -490,6 +495,8 @@ export const updateOrderStatusService = async (
     },
   });
 
+  notifyOrderStatusEmail(orderId, status);
+
   return updatedOrder;
 };
 
@@ -587,6 +594,8 @@ export const requestRefundService = async (
           ? JSON.parse(item.attributes)
           : item.attributes || {},
     }));
+    notifyOrderStatusEmail(orderId, OrderStatus.CANCELLED);
+
     return {
       outcome: "cancelled_unpaid" as const,
       order: updated ? { ...updated, items: formattedItems } : null,
@@ -639,6 +648,8 @@ export const requestRefundService = async (
 
     return refund;
   });
+
+  notifyOrderStatusEmail(orderId, OrderStatus.REFUNDED);
 
   return { outcome: "refunded" as const, refundRequest };
 };
