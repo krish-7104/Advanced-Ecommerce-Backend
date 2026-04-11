@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { getOrderByIdService } from "../order/order.service.js";
 import { notifyOrderStatusEmail } from "../../../utils/order-email.js";
 import { OrderStatus } from "../../../../generated/prisma/enums.js";
+import { emitLiveDashboardService } from "../../admin/dashboard/dashboard.service.js";
 type ParsedAttributes = Record<string, string>;
 
 const parseAttributes = (raw: unknown): ParsedAttributes => {
@@ -220,6 +221,11 @@ export const syncCheckoutSessionService = async (
   ]);
 
   notifyOrderStatusEmail(orderId, OrderStatus.PAID);
+  emitLiveDashboardService({
+    title: "Order Paid",
+    message: `Order #${orderId} has been successfully paid!`,
+    type: "success"
+  });
 
   return {
     synced: true,
@@ -275,6 +281,11 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
             data: { status: "PAID" },
           });
           notifyOrderStatusEmail(payment.orderId, OrderStatus.PAID);
+          emitLiveDashboardService({
+            title: "Order Paid",
+            message: `A new order has been paid via Stripe!`,
+            type: "success"
+          });
         }
 
         break;
@@ -339,6 +350,11 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
               data: { status: "PAID" },
             });
             notifyOrderStatusEmail(fallback.orderId, OrderStatus.PAID);
+            emitLiveDashboardService({
+              title: "Order Paid",
+              message: `Payment received for order #${fallback.orderId}`,
+              type: "success"
+            });
           }
           break;
         }
@@ -364,6 +380,11 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
         });
 
         notifyOrderStatusEmail(payment.orderId, OrderStatus.PAID);
+        emitLiveDashboardService({
+          title: "Order Paid",
+          message: `Payment confirmed for order #${payment.orderId}`,
+          type: "success"
+        });
 
         break;
       }

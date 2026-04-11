@@ -1,5 +1,6 @@
 import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
+import { emitEvent } from "../../../utils/socket.js";
 
 export const getStatsService = async () => {
   try {
@@ -76,7 +77,9 @@ export const getStatsService = async () => {
           totalAmount: true,
         },
         where: {
-          status: "PAID",
+          status: {
+            in: ["PAID", "PACKED", "SHIPPED", "DELIVERED"],
+          },
           createdAt: {
             gte: startOfToday,
             lt: endOfToday,
@@ -88,7 +91,9 @@ export const getStatsService = async () => {
           totalAmount: true,
         },
         where: {
-          status: "PAID",
+          status: {
+            in: ["PAID", "PACKED", "SHIPPED", "DELIVERED"],
+          },
           createdAt: {
             gte: startOfYesterday,
             lt: endOfYesterday,
@@ -357,3 +362,20 @@ export const getProductCountByParentCategoryService = async () => {
     throw new ApiError(500, error?.message || "Something Went Wrong");
   }
 };
+
+export const emitLiveDashboardService = async (notification?: { title: string; message: string; type: 'success' | 'info' }) => {
+  try {
+    const [stats, orderStatus, topSelling] = await Promise.all([
+      getStatsService(),
+      getOrderStatusGraphService(),
+      getTopSellingProductsService(5),
+    ]);
+    emitEvent("dashboard_update", { stats, orderStatus, topSelling });
+    if (notification) {
+      emitEvent("dashboard_notification", notification);
+    }
+  } catch (error) {
+    console.error("Failed to emit live stats:", error);
+  }
+};
+

@@ -11,6 +11,7 @@ import {
   UpdateOrderStatusPayload,
   OrderQueryParams,
 } from "./order.types";
+import { emitLiveDashboardService } from "../../admin/dashboard/dashboard.service.js";
 
 export const createOrderService = async (
   payload: CreateOrderPayload,
@@ -150,6 +151,7 @@ export const createOrderService = async (
   });
 
   notifyOrderStatusEmail(order.id, OrderStatus.PENDING);
+  emitLiveDashboardService();
 
   return order;
 };
@@ -372,6 +374,7 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
   });
 
   notifyOrderStatusEmail(orderId, OrderStatus.CANCELLED);
+  emitLiveDashboardService();
 
   return { ...updatedOrder, items: formattedItems };
 };
@@ -496,6 +499,7 @@ export const updateOrderStatusService = async (
   });
 
   notifyOrderStatusEmail(orderId, status);
+  emitLiveDashboardService();
 
   return updatedOrder;
 };
@@ -650,6 +654,7 @@ export const requestRefundService = async (
   });
 
   notifyOrderStatusEmail(orderId, OrderStatus.REFUNDED);
+  emitLiveDashboardService();
 
   return { outcome: "refunded" as const, refundRequest };
 };

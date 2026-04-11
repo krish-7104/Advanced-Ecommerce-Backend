@@ -23,6 +23,7 @@ import {
   sendEmailVerificationEmail,
 } from "../../../utils/email.service";
 import { CartItemStatus } from "../../../../generated/prisma/enums";
+import { emitLiveDashboardService } from "../../admin/dashboard/dashboard.service.js";
 
 export const registerUserService = async (payload: RegisterUserPayload) => {
   try {
@@ -46,6 +47,12 @@ export const registerUserService = async (payload: RegisterUserPayload) => {
     const user = await prisma.user.create({
       data: { email, password: hashPassword, firstName, lastName },
       omit: { password: true, createdAt: true, updatedAt: true },
+    });
+
+    emitLiveDashboardService({
+      title: "New Customer",
+      message: `${user.firstName} ${user.lastName} has just joined!`,
+      type: "info"
     });
 
     // Access token
@@ -664,6 +671,8 @@ export const deleteAccountService = async (userId: string) => {
         where: { id: userId },
       });
     });
+
+    emitLiveDashboardService();
 
     return { message: "Account deleted successfully" };
   } catch (error: any) {

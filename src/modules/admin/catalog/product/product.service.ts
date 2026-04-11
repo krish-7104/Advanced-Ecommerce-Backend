@@ -4,6 +4,7 @@ import ApiError from "../../../../utils/ApiError";
 import { prisma } from "../../../../utils/prisma";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { GetAllProductsQueryParams } from "./product.types";
+import { emitLiveDashboardService } from "../../dashboard/dashboard.service.js";
 
 export const createProductSerice = async (payload: ProductModel) => {
   try {
@@ -67,6 +68,9 @@ export const createProductSerice = async (payload: ProductModel) => {
         isFeatured,
       },
     });
+
+    emitLiveDashboardService();
+
     return {
       ...Product,
       attributesSchema:
@@ -176,6 +180,8 @@ export const deleteProductService = async (id: string) => {
     const result = await prisma.product.delete({
       where: { id },
     });
+
+    emitLiveDashboardService();
 
     return result;
   } catch (error: any) {
