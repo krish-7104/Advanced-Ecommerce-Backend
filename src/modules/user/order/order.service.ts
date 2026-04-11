@@ -374,7 +374,11 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
   });
 
   notifyOrderStatusEmail(orderId, OrderStatus.CANCELLED);
-  emitLiveDashboardService();
+  emitLiveDashboardService({
+    title: "Order Cancelled",
+    message: `Order #${orderId} was cancelled by the user.`,
+    type: "info"
+  });
 
   return { ...updatedOrder, items: formattedItems };
 };
@@ -499,7 +503,11 @@ export const updateOrderStatusService = async (
   });
 
   notifyOrderStatusEmail(orderId, status);
-  emitLiveDashboardService();
+  emitLiveDashboardService(
+    status === OrderStatus.CANCELLED 
+      ? { title: "Order Cancelled", message: `Order #${orderId} has been cancelled.`, type: "info" }
+      : undefined
+  );
 
   return updatedOrder;
 };
@@ -599,6 +607,11 @@ export const requestRefundService = async (
           : item.attributes || {},
     }));
     notifyOrderStatusEmail(orderId, OrderStatus.CANCELLED);
+    emitLiveDashboardService({
+      title: "Order Cancelled",
+      message: `Unpaid order #${orderId} was cancelled.`,
+      type: "info"
+    });
 
     return {
       outcome: "cancelled_unpaid" as const,
@@ -654,7 +667,11 @@ export const requestRefundService = async (
   });
 
   notifyOrderStatusEmail(orderId, OrderStatus.REFUNDED);
-  emitLiveDashboardService();
+  emitLiveDashboardService({
+    title: "Order Refunded",
+    message: `Order #${orderId} was refunded successfully.`,
+    type: "info"
+  });
 
   return { outcome: "refunded" as const, refundRequest };
 };
