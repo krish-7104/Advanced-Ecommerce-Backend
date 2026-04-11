@@ -3,9 +3,13 @@ import { prisma } from "../../../utils/prisma";
 import { stripe } from "../../../app";
 import "dotenv/config";
 import Stripe from "stripe";
+import { getOrderByIdService } from "../order/order.service.js";
 type ParsedAttributes = Record<string, string>;
 
 const parseAttributes = (raw: unknown): ParsedAttributes => {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    return raw as ParsedAttributes;
+  }
   if (!raw || typeof raw !== "string") return {};
   try {
     return JSON.parse(raw);
@@ -14,9 +18,12 @@ const parseAttributes = (raw: unknown): ParsedAttributes => {
   }
 };
 
-export const createCheckoutSessionService = async (orderId: string) => {
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
+export const createCheckoutSessionService = async (
+  orderId: string,
+  userId: string
+) => {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
     include: {
       items: true,
       payments: true,
@@ -27,11 +34,26 @@ export const createCheckoutSessionService = async (orderId: string) => {
     throw new ApiError(404, "Order not found");
   }
 
-  // Prevent duplicate Stripe sessions
-  const existingPayment = order.payments.find((p) => p.status === "CREATED");
+  if (order.status !== "PENDING") {
+    throw new ApiError(400, "This order cannot be paid for anymore");
+  }
 
+  const existingPayment = order.payments.find((p) => p.status === "CREATED");
   if (existingPayment) {
-    throw new ApiError(400, "Payment session already exists for this order");
+    try {
+      const session = await stripe.checkout.sessions.retrieve(
+        existingPayment.intentId
+      );
+      if (session.status === "open" && session.url) {
+        return { url: session.url, sessionId: session.id };
+      }
+    } catch {
+      // session missing in Stripe
+    }
+    await prisma.payment.updateMany({
+      where: { id: existingPayment.id },
+      data: { status: "CANCELLED" },
+    });
   }
 
   const lineItems = order.items.map((item) => {
@@ -54,6 +76,13 @@ export const createCheckoutSessionService = async (orderId: string) => {
     throw new ApiError(400, "Order has no items");
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  const customerEmail =
+    user?.email && user.email.trim().length > 0 ? user.email.trim() : undefined;
+
   let session;
   try {
     session = await stripe.checkout.sessions.create(
@@ -61,16 +90,18 @@ export const createCheckoutSessionService = async (orderId: string) => {
         mode: "payment",
         payment_method_types: ["card"],
         line_items: lineItems,
-        success_url: `${process.env.FRONTEND_URL}/order/${orderId}?payment=success`,
+        ...(customerEmail ? { customer_email: customerEmail } : {}),
+        success_url: `${process.env.FRONTEND_URL}/order/${orderId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.FRONTEND_URL}/order/${orderId}?payment=failure`,
         metadata: { orderId },
         payment_intent_data: {
           metadata: { orderId },
+          ...(customerEmail ? { receipt_email: customerEmail } : {}),
         },
         expand: ["payment_intent"],
       },
       {
-        idempotencyKey: `checkout_${orderId}`,
+        idempotencyKey: `checkout_${orderId}_${Date.now()}`,
       }
     );
   } catch (err: any) {
@@ -96,6 +127,100 @@ export const createCheckoutSessionService = async (orderId: string) => {
   return {
     url: session.url,
     sessionId: session.id,
+  };
+};
+
+export const syncCheckoutSessionService = async (
+  orderId: string,
+  userId: string,
+  checkoutSessionId?: string
+) => {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId },
+    include: {
+      payments: { orderBy: { createdAt: "desc" } },
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  if (order.status === "PAID") {
+    return {
+      synced: false,
+      alreadyPaid: true,
+      order: await getOrderByIdService(orderId, userId),
+    };
+  }
+
+  if (order.status !== "PENDING") {
+    throw new ApiError(400, "Order cannot be synced for payment");
+  }
+
+  let sessionId = checkoutSessionId?.trim();
+  if (!sessionId) {
+    const latest = order.payments.find((p) => p.intentId?.startsWith("cs_"));
+    sessionId = latest?.intentId;
+  }
+
+  if (!sessionId) {
+    throw new ApiError(400, "No checkout session for this order");
+  }
+
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["payment_intent"],
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Stripe error";
+    throw new ApiError(400, message);
+  }
+
+  if (session.metadata?.orderId !== orderId) {
+    throw new ApiError(403, "Checkout session does not match this order");
+  }
+
+  const payment = await prisma.payment.findFirst({
+    where: { orderId, intentId: session.id },
+  });
+
+  if (!payment) {
+    throw new ApiError(404, "Payment record not found for this session");
+  }
+
+  if (session.payment_status !== "paid") {
+    return {
+      synced: false,
+      alreadyPaid: false,
+      order: await getOrderByIdService(orderId, userId),
+    };
+  }
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
+  await prisma.$transaction([
+    prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: "SUCCEEDED",
+        paymentIntentId: paymentIntentId || payment.paymentIntentId,
+      },
+    }),
+    prisma.order.update({
+      where: { id: orderId },
+      data: { status: "PAID" },
+    }),
+  ]);
+
+  return {
+    synced: true,
+    alreadyPaid: false,
+    order: await getOrderByIdService(orderId, userId),
   };
 };
 
@@ -140,15 +265,6 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
           },
         });
 
-        await prisma.order.update({
-          where: {
-            id: payment.orderId,
-          },
-          data: {
-            status: session.payment_status === "paid" ? "PACKED" : "PENDING",
-          },
-        });
-
         if (session.payment_status === "paid") {
           await prisma.order.update({
             where: { id: payment.orderId },
@@ -173,7 +289,9 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
         const payment = await prisma.payment.findFirst({
           where: {
             orderId,
+            paymentIntentId: null,
           },
+          orderBy: { createdAt: "desc" },
         });
 
         if (payment) {
@@ -194,17 +312,30 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
         const orderId = paymentIntent.metadata?.orderId;
         const paymentIntentId = paymentIntent.id;
 
-        if (!orderId) {
-          console.error("OrderId not found in payment_intent.succeeded");
-          return;
-        }
-
-        // Find payment by paymentIntentId or orderId
         const payment = await prisma.payment.findFirst({
-          where: {
-            OR: [{ paymentIntentId }, { orderId }],
-          },
+          where: { paymentIntentId },
         });
+
+        if (!payment && orderId) {
+          const fallback = await prisma.payment.findFirst({
+            where: { orderId },
+            orderBy: { createdAt: "desc" },
+          });
+          if (fallback && fallback.orderId === orderId) {
+            await prisma.payment.update({
+              where: { id: fallback.id },
+              data: {
+                status: "SUCCEEDED",
+                paymentIntentId,
+              },
+            });
+            await prisma.order.update({
+              where: { id: fallback.orderId },
+              data: { status: "PAID" },
+            });
+          }
+          break;
+        }
 
         if (!payment) {
           console.error(
@@ -226,6 +357,25 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
           data: { status: "PAID" },
         });
 
+        break;
+      }
+
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntentId =
+          typeof charge.payment_intent === "string"
+            ? charge.payment_intent
+            : charge.payment_intent?.id;
+        if (!paymentIntentId) break;
+        const payment = await prisma.payment.findFirst({
+          where: { paymentIntentId },
+        });
+        if (payment) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: { status: "REFUNDED" },
+          });
+        }
         break;
       }
 

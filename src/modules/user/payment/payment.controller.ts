@@ -3,6 +3,7 @@ import ApiError from "../../../utils/ApiError";
 import {
   createCheckoutSessionService,
   stripePaymentWebhookService,
+  syncCheckoutSessionService,
 } from "./payment.service";
 import ApiResponse from "../../../utils/ApiResponse";
 import { stripe } from "../../../app";
@@ -14,25 +15,55 @@ export const createPaymentIntentController = async (
 ) => {
   try {
     const { orderId } = req.params;
+    const userId = req.user?.userId;
 
     if (!orderId) {
       throw new ApiError(400, "OrderId is required!");
     }
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized");
+    }
 
-    const payment = await createCheckoutSessionService(orderId);
+    const payment = await createCheckoutSessionService(orderId, userId);
 
     return res
       .status(200)
       .send(
         new ApiResponse(200, payment, "Payment intent created Successfully")
       );
-  } catch (error: any) {
-    console.log("Error in creating payment intent status");
-    throw new ApiError(
-      500,
-      error?.message || "Error in checking payment status"
-    );
+  } catch (error: unknown) {
+    if (error instanceof ApiError) throw error;
+    const message =
+      error instanceof Error ? error.message : "Payment session could not be created";
+    throw new ApiError(500, message);
   }
+};
+
+export const syncCheckoutSessionController = async (
+  req: Request,
+  res: Response
+) => {
+  const { orderId } = req.params;
+  const userId = req.user?.userId;
+  const sessionId =
+    typeof req.body?.sessionId === "string" ? req.body.sessionId : undefined;
+
+  if (!orderId) {
+    throw new ApiError(400, "OrderId is required");
+  }
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  const result = await syncCheckoutSessionService(orderId, userId, sessionId);
+
+  const message = result.synced
+    ? "Payment confirmed. Order is now paid."
+    : result.alreadyPaid
+      ? "Order is already paid."
+      : "Payment not completed yet.";
+
+  return res.status(200).send(new ApiResponse(200, result, message));
 };
 
 export const stripePaymentWebhookController = async (

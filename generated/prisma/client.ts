@@ -124,3 +124,8 @@ export type Reviews = Prisma.ReviewsModel
  * 
  */
 export type ReviewVotes = Prisma.ReviewVotesModel
+/**
+ * Model RefundRequest
+ * 
+ */
+export type RefundRequest = Prisma.RefundRequestModel

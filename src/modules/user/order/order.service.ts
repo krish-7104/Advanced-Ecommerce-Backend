@@ -4,6 +4,7 @@ import {
   OrderStatus,
   CartItemStatus,
 } from "../../../../generated/prisma/enums";
+import { stripe } from "../../../app";
 import {
   CreateOrderPayload,
   UpdateOrderStatusPayload,
@@ -490,4 +491,154 @@ export const updateOrderStatusService = async (
   });
 
   return updatedOrder;
+};
+
+export const requestRefundService = async (
+  orderId: string,
+  userId: string,
+  reason: string,
+) => {
+  const order = await prisma.order.findFirst({
+    where: {
+      id: orderId,
+      userId: userId,
+    },
+    include: {
+      payments: true,
+      items: true,
+    },
+  });
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  const refundableStatuses: OrderStatus[] = [
+    OrderStatus.PENDING,
+    OrderStatus.PAID,
+    OrderStatus.PACKED,
+  ];
+
+  if (!refundableStatuses.includes(order.status)) {
+    throw new ApiError(
+      400,
+      `Cannot request refund for order with status ${order.status}.`,
+    );
+  }
+
+  const existingRefund = await prisma.refundRequest.findUnique({
+    where: { orderId },
+  });
+
+  if (existingRefund) {
+    throw new ApiError(400, "Refund already requested for this order");
+  }
+
+  const successfulPayment = order.payments.find(
+    (p) => p.status === "SUCCEEDED" && p.paymentIntentId,
+  );
+
+  if (
+    (order.status === OrderStatus.PAID || order.status === OrderStatus.PACKED) &&
+    !successfulPayment
+  ) {
+    throw new ApiError(
+      400,
+      "Payment is not complete yet. Try again in a moment or contact support.",
+    );
+  }
+
+  if (order.status === OrderStatus.PENDING && !successfulPayment) {
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: OrderStatus.CANCELLED },
+      });
+      for (const item of order.items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: {
+            stockAvailable: { increment: item.quantity },
+            stockSold: { decrement: item.quantity },
+          },
+        });
+      }
+      await tx.payment.updateMany({
+        where: { orderId, status: "CREATED" },
+        data: { status: "CANCELLED" },
+      });
+      return tx.order.findFirst({
+        where: { id: orderId },
+        include: {
+          items: {
+            include: {
+              variant: { include: { product: true } },
+            },
+          },
+          address: true,
+          payments: true,
+        },
+      });
+    });
+    const formattedItems = updated?.items.map((item) => ({
+      ...item,
+      attributes:
+        typeof item.attributes === "string"
+          ? JSON.parse(item.attributes)
+          : item.attributes || {},
+    }));
+    return {
+      outcome: "cancelled_unpaid" as const,
+      order: updated ? { ...updated, items: formattedItems } : null,
+    };
+  }
+
+  if (successfulPayment?.paymentIntentId) {
+    try {
+      await stripe.refunds.create({
+        payment_intent: successfulPayment.paymentIntentId,
+        metadata: { orderId, reason: reason || "customer_request" },
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Refund failed";
+      throw new ApiError(500, message);
+    }
+  }
+
+  const refundRequest = await prisma.$transaction(async (tx) => {
+    const refund = await tx.refundRequest.create({
+      data: {
+        orderId,
+        userId,
+        reason: reason || null,
+        status: "APPROVED",
+      },
+    });
+
+    await tx.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.REFUNDED },
+    });
+
+    if (successfulPayment) {
+      await tx.payment.update({
+        where: { id: successfulPayment.id },
+        data: { status: "REFUNDED" },
+      });
+    }
+
+    for (const item of order.items) {
+      await tx.productVariant.update({
+        where: { id: item.variantId },
+        data: {
+          stockAvailable: { increment: item.quantity },
+          stockSold: { decrement: item.quantity },
+        },
+      });
+    }
+
+    return refund;
+  });
+
+  return { outcome: "refunded" as const, refundRequest };
 };

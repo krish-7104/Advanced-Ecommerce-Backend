@@ -33,6 +33,7 @@ model User {
   updatedAt DateTime   @updatedAt
   cartItems CartItem[]
   orders    Order[]
+  refundRequests RefundRequest[]
   reviews Reviews[]
   reviewVotes ReviewVotes[]
 }
@@ -182,6 +183,7 @@ model Order {
 
   items    OrderItem[]
   payments Payment[]
+  refundRequest RefundRequest?
 
   @@index([userId])
 }
@@ -356,4 +358,23 @@ model ReviewVotes {
   @@unique([userId, reviewId])
   @@index([userId])
   @@index([reviewId])
+}
+model RefundRequest {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  userId    String
+  reason    String?
+  status    RefundStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order     Order    @relation(fields: [orderId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

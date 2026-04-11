@@ -6,6 +6,7 @@ import {
   getUserOrdersService,
   getOrderByIdService,
   cancelOrderService,
+  requestRefundService,
 } from "./order.service";
 
 export const createOrderController = async (req: Request, res: Response) => {
@@ -80,3 +81,27 @@ export const cancelOrderController = async (req: Request, res: Response) => {
 
   return res.send(new ApiResponse(200, order, "Order cancelled successfully"));
 };
+
+export const requestRefundController = async (req: Request, res: Response) => {
+  const userId = req?.user?.userId;
+  const orderId = req.params.id;
+  const { reason } = req.body;
+
+  if (!userId) {
+    throw new ApiError(400, "userId is missing");
+  }
+
+  if (!orderId) {
+    throw new ApiError(400, "Order ID is required");
+  }
+
+  const result = await requestRefundService(orderId, userId, reason || "");
+
+  const message =
+    result.outcome === "cancelled_unpaid"
+      ? "Order cancelled (no payment was taken)"
+      : "Refund processed successfully";
+
+  return res.send(new ApiResponse(200, result, message));
+};
+

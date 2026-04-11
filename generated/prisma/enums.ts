@@ -58,3 +58,12 @@ export const AssetOwner = {
 } as const
 
 export type AssetOwner = (typeof AssetOwner)[keyof typeof AssetOwner]
+
+
+export const RefundStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
