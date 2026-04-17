@@ -1,5 +1,11 @@
 import ApiError from "../../../utils/ApiError";
 import { prisma } from "../../../utils/prisma";
+import {
+  getCache,
+  setCache,
+  deleteCachePattern,
+  getCacheKey,
+} from "../../../utils/redis.js";
 import { notifyOrderStatusEmail } from "../../../utils/order-email.js";
 import {
   OrderStatus,
@@ -153,6 +159,9 @@ export const createOrderService = async (
   notifyOrderStatusEmail(order.id, OrderStatus.PENDING);
   emitLiveDashboardService();
 
+  await deleteCachePattern(`order:user:${userId}*`);
+  await deleteCachePattern("order:admin:all*");
+
   return order;
 };
 
@@ -162,6 +171,17 @@ export const getUserOrdersService = async (
 ) => {
   const { page = 1, limit = 10, status } = queryParams;
   const skip = (page - 1) * limit;
+
+  const cacheKey = getCacheKey(
+    "order",
+    "user",
+    userId,
+    page.toString(),
+    limit.toString(),
+    status || "all"
+  );
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
 
   const where: any = {
     userId: userId,
@@ -217,7 +237,7 @@ export const getUserOrdersService = async (
     };
   });
 
-  return {
+  const result = {
     orders: formattedOrders,
     pagination: {
       total,
@@ -226,9 +246,15 @@ export const getUserOrdersService = async (
       totalPages: Math.ceil(total / limit),
     },
   };
+  await setCache(cacheKey, result, 300);
+  return result;
 };
 
 export const getOrderByIdService = async (orderId: string, userId: string) => {
+  const cacheKey = getCacheKey("order", orderId, userId);
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
+
   const order = await prisma.order.findFirst({
     where: {
       id: orderId,
@@ -263,10 +289,16 @@ export const getOrderByIdService = async (orderId: string, userId: string) => {
     };
   });
 
-  return { ...order, items: formattedItems };
+  const result = { ...order, items: formattedItems };
+  await setCache(cacheKey, result, 300);
+  return result;
 };
 
 export const getOrderByIdAdminService = async (orderId: string) => {
+  const cacheKey = getCacheKey("order", "admin", orderId);
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
+
   const order = await prisma.order.findUnique({
     where: {
       id: orderId,
@@ -301,7 +333,9 @@ export const getOrderByIdAdminService = async (orderId: string) => {
     throw new ApiError(404, "Order not found");
   }
 
-  return { ...order, items: formattedItems };
+  const result = { ...order, items: formattedItems };
+  await setCache(cacheKey, result, 300);
+  return result;
 };
 
 export const cancelOrderService = async (orderId: string, userId: string) => {
@@ -380,12 +414,26 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
     type: "info"
   });
 
+  await deleteCachePattern(`order:*${orderId}*`);
+  await deleteCachePattern(`order:user:*`);
+
   return { ...updatedOrder, items: formattedItems };
 };
 
 export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
   const { page = 1, limit = 10, status } = queryParams;
   const skip = (page - 1) * limit;
+
+  const cacheKey = getCacheKey(
+    "order",
+    "admin",
+    "all",
+    page.toString(),
+    limit.toString(),
+    status || "all"
+  );
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
 
   const where: any = {};
 
@@ -433,7 +481,7 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
     };
   });
 
-  return {
+  const result = {
     orders: formattedOrders,
     pagination: {
       total,
@@ -442,6 +490,8 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
       totalPages: Math.ceil(total / limit),
     },
   };
+  await setCache(cacheKey, result, 300);
+  return result;
 };
 
 export const updateOrderStatusService = async (
@@ -504,10 +554,13 @@ export const updateOrderStatusService = async (
 
   notifyOrderStatusEmail(orderId, status);
   emitLiveDashboardService(
-    status === OrderStatus.CANCELLED 
+    status === OrderStatus.CANCELLED
       ? { title: "Order Cancelled", message: `Order #${orderId} has been cancelled.`, type: "info" }
       : undefined
   );
+
+  await deleteCachePattern(`order:*${orderId}*`);
+  await deleteCachePattern("order:admin:all*");
 
   return updatedOrder;
 };
@@ -613,6 +666,10 @@ export const requestRefundService = async (
       type: "info"
     });
 
+    await deleteCachePattern(`order:*${orderId}*`);
+    await deleteCachePattern(`order:user:${userId}*`);
+    await deleteCachePattern("order:admin:all*");
+
     return {
       outcome: "cancelled_unpaid" as const,
       order: updated ? { ...updated, items: formattedItems } : null,
@@ -672,6 +729,10 @@ export const requestRefundService = async (
     message: `Order #${orderId} was refunded successfully.`,
     type: "info"
   });
+
+  await deleteCachePattern(`order:*${orderId}*`);
+  await deleteCachePattern(`order:user:${userId}*`);
+  await deleteCachePattern("order:admin:all*");
 
   return { outcome: "refunded" as const, refundRequest };
 };

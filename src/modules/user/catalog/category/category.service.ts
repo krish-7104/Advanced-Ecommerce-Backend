@@ -1,11 +1,20 @@
 import { AssetOwner } from "../../../../../generated/prisma/enums";
 import ApiError from "../../../../utils/ApiError";
 import { prisma } from "../../../../utils/prisma";
+import {
+  getCache,
+  setCache,
+  getCacheKey,
+} from "../../../../utils/redis.js";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { GetAllCategoriesQueryParams } from "./category.types";
 
 export const getCategoryByIdService = async (id: string) => {
   try {
+    const cacheKey = getCacheKey("category", "id", id);
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
@@ -78,7 +87,9 @@ export const getCategoryByIdService = async (id: string) => {
       true
     );
 
-    return { ...category, image: categoryAsset?.images?.[0] || null };
+    const result = { ...category, image: categoryAsset?.images?.[0] || null };
+    await setCache(cacheKey, result);
+    return result;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -90,6 +101,14 @@ export const getAllCategoriesService = async (
 ) => {
   try {
     const { level } = queryParams;
+
+    const cacheKey = getCacheKey(
+      "category",
+      "all",
+      level ? `level-${level}` : "all-levels"
+    );
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
 
     const where: any = {};
 
@@ -124,10 +143,12 @@ export const getAllCategoriesService = async (
       })
     );
 
-    return category.map((category: any, index: number) => ({
+    const result = category.map((category: any, index: number) => ({
       ...category,
       image: payload[index]?.images?.[0] || null,
     }));
+    await setCache(cacheKey, result);
+    return result;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");

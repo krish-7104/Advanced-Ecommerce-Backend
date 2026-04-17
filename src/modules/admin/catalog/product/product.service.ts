@@ -2,6 +2,7 @@ import { AssetOwner } from "../../../../../generated/prisma/enums";
 import { ProductModel } from "../../../../../generated/prisma/models";
 import ApiError from "../../../../utils/ApiError";
 import { prisma } from "../../../../utils/prisma";
+import { deleteCachePattern } from "../../../../utils/redis.js";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { GetAllProductsQueryParams } from "./product.types";
 import { emitLiveDashboardService } from "../../dashboard/dashboard.service.js";
@@ -70,6 +71,7 @@ export const createProductSerice = async (payload: ProductModel) => {
     });
 
     emitLiveDashboardService();
+    await deleteCachePattern("product:*");
 
     return {
       ...Product,
@@ -144,6 +146,7 @@ export const updateProductService = async (
       where: { id },
       data: { ...payload, attributesSchema: payload.attributesSchema || {} },
     });
+    await deleteCachePattern("product:*");
     return {
       beforeProduct,
       ...Product,
@@ -182,6 +185,7 @@ export const deleteProductService = async (id: string) => {
     });
 
     emitLiveDashboardService();
+    await deleteCachePattern("product:*");
 
     return result;
   } catch (error: any) {

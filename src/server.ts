@@ -2,12 +2,51 @@ import http from "http";
 import app from "./app.js";
 import { config } from "dotenv";
 import { initSocket } from "./utils/socket.js";
+import { client } from "./utils/metrics.js";
+import { createLogger, transports, format } from "winston";
+import LokiTransport from "winston-loki";
 config();
+
+const SERVICE_NAME = process.env.SERVICE_NAME || "ecommercely-backend";
+const ENV = process.env.NODE_ENV || "development";
+const LOKI_HOST = process.env.LOKI_HOST || "http://localhost:3100";
+
+export const logger = createLogger({
+  level: "info",
+  format: format.combine(format.timestamp(), format.json()),
+  defaultMeta: { service: SERVICE_NAME, environment: ENV },
+  transports: [
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        format.printf(
+          ({ timestamp, level, message, ...meta }) =>
+            `${timestamp} [${level}] ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ""}`,
+        ),
+      ),
+    }),
+    new LokiTransport({
+      host: LOKI_HOST,
+      labels: { service: SERVICE_NAME, environment: ENV },
+      json: true,
+      format: format.json(),
+      replaceTimestamp: true,
+      onConnectionError: (err) =>
+        console.error("[Loki] Connection error:", err.message),
+    }),
+  ],
+});
 
 const PORT = Number(process.env.PORT) || 4000;
 
-// create HTTP server
 const server = http.createServer(app);
+
+app.get("/metrics", async (_req, res) => {
+  res.setHeader("Content-Type", client.register.contentType);
+  const metrics = await client.register.metrics();
+  res.send(metrics);
+});
 
 // initialize socket
 initSocket(server);

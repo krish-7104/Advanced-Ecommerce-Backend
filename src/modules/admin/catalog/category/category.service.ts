@@ -6,6 +6,7 @@ import { uploadFileHandler } from "../../../../utils/upload-handlers/upload-file
 import { GetAllCategoriesQueryParams } from "./category.types";
 import fs from "fs";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
+import { deleteCachePattern } from "../../../../utils/redis.js";
 
 export const createCategoryService = async (
   payload: CategoryModel,
@@ -61,6 +62,8 @@ export const createCategoryService = async (
       0,
       true,
     );
+
+    await deleteCachePattern("category:*");
 
     return {
       ...category,
@@ -179,6 +182,8 @@ export const updateCategoryService = async (
           };
     });
 
+    await deleteCachePattern("category:*");
+
     return {
       ...result,
       beforeCategory,
@@ -212,6 +217,8 @@ export const deleteCategoryService = async (id: string) => {
     const result = await prisma.category.delete({
       where: { id },
     });
+
+    await deleteCachePattern("category:*");
 
     return result;
   } catch (error: any) {

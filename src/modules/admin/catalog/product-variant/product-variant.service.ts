@@ -4,6 +4,7 @@ import { prisma } from "../../../../utils/prisma";
 import { uploadFileHandler } from "../../../../utils/upload-handlers/upload-file-handler";
 import { handleVariantImage } from "../../../../utils/upload-handlers/handle-variant-image";
 import { AssetOwner } from "../../../../../generated/prisma/browser";
+import { deleteCachePattern } from "../../../../utils/redis.js";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { UpdateVariantInputTypes } from "./product-variant.types";
 import fs from "fs";
@@ -97,6 +98,8 @@ export const createProductVariantService = async (
         ),
       ),
     );
+
+    await deleteCachePattern("product:*");
 
     return {
       ...Product,
@@ -364,6 +367,8 @@ export const updateProductVariantService = async ({
       orderBy: [{ isPrimary: "desc" }, { order: "asc" }],
     });
 
+    await deleteCachePattern("product:*");
+
     return {
       ...updatedVariant,
       attributes:
@@ -407,6 +412,8 @@ export const deleteProductVariantService = async (id: string) => {
         assetOwner: AssetOwner.PRODUCT_IMAGE,
       },
     });
+
+    await deleteCachePattern("product:*");
 
     return deletedVariant;
   } catch (error: any) {

@@ -2,11 +2,20 @@ import { Prisma } from "../../../../../generated/prisma/browser";
 import { AssetOwner } from "../../../../../generated/prisma/enums";
 import ApiError from "../../../../utils/ApiError";
 import { prisma } from "../../../../utils/prisma";
+import {
+  getCache,
+  setCache,
+  getCacheKey,
+} from "../../../../utils/redis.js";
 import { addAssetToPayload } from "../../../../utils/upload-handlers/add-asset-to-payload";
 import { GetAllProductsQueryParams } from "./product.types";
 
 export const getProductByIdService = async (id: string) => {
   try {
+    const cacheKey = getCacheKey("product", "id", id);
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const Product = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -31,13 +40,15 @@ export const getProductByIdService = async (id: string) => {
       throw new ApiError(404, "Product not found!");
     }
 
-    return {
+    const result = {
       ...Product,
       attributesSchema:
         typeof Product.attributesSchema === "string"
           ? JSON.parse(Product.attributesSchema)
           : Product.attributesSchema || {},
     };
+    await setCache(cacheKey, result);
+    return result;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something Went Wrong");
@@ -46,6 +57,10 @@ export const getProductByIdService = async (id: string) => {
 
 export const getProductBySlugService = async (slug: string) => {
   try {
+    const cacheKey = getCacheKey("product", "slug", slug);
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const product = await prisma.product.findUnique({
       where: { slug },
       include: {
@@ -110,7 +125,7 @@ export const getProductBySlugService = async (slug: string) => {
       };
     });
 
-    return {
+    const result = {
       ...product,
       attributesSchema:
         typeof product.attributesSchema === "string"
@@ -118,6 +133,8 @@ export const getProductBySlugService = async (slug: string) => {
           : product.attributesSchema || {},
       variants: variantsWithDetails,
     };
+    await setCache(cacheKey, result);
+    return result;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something went wrong");
@@ -136,6 +153,22 @@ export const getAllProductsService = async ({
   sort,
 }: GetAllProductsQueryParams) => {
   try {
+    const cacheKey = getCacheKey(
+      "product",
+      "all",
+      page?.toString() || "1",
+      limit?.toString() || "10",
+      featured?.toString() || "all",
+      search || "no-search",
+      categoryId || "all-categories",
+      minPrice?.toString() || "no-min",
+      maxPrice?.toString() || "no-max",
+      inStock?.toString() || "all-stock",
+      sort || "default"
+    );
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const shouldPaginate =
       typeof page === "number" && typeof limit === "number";
 
@@ -267,7 +300,7 @@ export const getAllProductsService = async ({
       };
     });
 
-    return {
+    const result = {
       data,
       pagination: shouldPaginate
         ? {
@@ -278,6 +311,8 @@ export const getAllProductsService = async ({
           }
         : null,
     };
+    await setCache(cacheKey, result);
+    return result;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(500, error?.message || "Something went wrong");
@@ -286,6 +321,10 @@ export const getAllProductsService = async ({
 
 export const getProductsByCategorySlugService = async (slug: string) => {
   try {
+    const cacheKey = getCacheKey("product", "category", slug);
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const products = await prisma.product.findMany({
       where: {
         category: {
@@ -335,6 +374,7 @@ export const getProductsByCategorySlugService = async (slug: string) => {
       }),
     );
 
+    await setCache(cacheKey, formattedProducts);
     return formattedProducts;
   } catch (error: any) {
     if (error instanceof ApiError) throw error;

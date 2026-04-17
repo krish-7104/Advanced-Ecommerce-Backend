@@ -36,6 +36,8 @@ import statesCitiesRoutes from "./modules/reference/states-cities/states-cities.
 
 import { stripePaymentWebhookController } from "./modules/user/payment/payment.controller.js";
 import Stripe from "stripe";
+import { logger } from "./server.js";
+import { metricsMiddleware } from "./middlewares/metrics.middleware.js";
 
 const app = express();
 
@@ -49,14 +51,19 @@ app.post(
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(metricsMiddleware);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.path === "/metrics") return next();
   const start = Date.now();
   res.on("finish", () => {
     const duration = Date.now() - start;
-    console.log(
-      `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`,
-    );
+    logger.info(`${req.method} ${req.originalUrl} ${res.statusCode}`, {
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      duration_ms: duration,
+    });
   });
   next();
 });
