@@ -178,7 +178,7 @@ export const getUserOrdersService = async (
     userId,
     page.toString(),
     limit.toString(),
-    status || "all"
+    status || "all",
   );
   const cached = await getCache(cacheKey);
   if (cached) return cached as any;
@@ -411,7 +411,8 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
   emitLiveDashboardService({
     title: "Order Cancelled",
     message: `Order #${orderId} was cancelled by the user.`,
-    type: "info"
+    type: "info",
+    orderId: orderId,
   });
 
   await deleteCachePattern(`order:*${orderId}*`);
@@ -430,7 +431,7 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
     "all",
     page.toString(),
     limit.toString(),
-    status || "all"
+    status || "all",
   );
   const cached = await getCache(cacheKey);
   if (cached) return cached as any;
@@ -555,8 +556,13 @@ export const updateOrderStatusService = async (
   notifyOrderStatusEmail(orderId, status);
   emitLiveDashboardService(
     status === OrderStatus.CANCELLED
-      ? { title: "Order Cancelled", message: `Order #${orderId} has been cancelled.`, type: "info" }
-      : undefined
+      ? {
+          title: "Order Cancelled",
+          message: `Order #${orderId} has been cancelled.`,
+          type: "info",
+          orderId: orderId,
+        }
+      : undefined,
   );
 
   await deleteCachePattern(`order:*${orderId}*`);
@@ -611,7 +617,8 @@ export const requestRefundService = async (
   );
 
   if (
-    (order.status === OrderStatus.PAID || order.status === OrderStatus.PACKED) &&
+    (order.status === OrderStatus.PAID ||
+      order.status === OrderStatus.PACKED) &&
     !successfulPayment
   ) {
     throw new ApiError(
@@ -663,7 +670,8 @@ export const requestRefundService = async (
     emitLiveDashboardService({
       title: "Order Cancelled",
       message: `Unpaid order #${orderId} was cancelled.`,
-      type: "info"
+      type: "info",
+      orderId: orderId,
     });
 
     await deleteCachePattern(`order:*${orderId}*`);
@@ -727,7 +735,8 @@ export const requestRefundService = async (
   emitLiveDashboardService({
     title: "Order Refunded",
     message: `Order #${orderId} was refunded successfully.`,
-    type: "info"
+    type: "info",
+    orderId: orderId,
   });
 
   await deleteCachePattern(`order:*${orderId}*`);

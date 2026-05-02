@@ -363,7 +363,12 @@ export const getProductCountByParentCategoryService = async () => {
   }
 };
 
-export const emitLiveDashboardService = async (notification?: { title: string; message: string; type: 'success' | 'info' }) => {
+export const emitLiveDashboardService = async (notification?: {
+  title: string;
+  message: string;
+  type: "success" | "info";
+  orderId?: string;
+}) => {
   try {
     const [stats, orderStatus, topSelling] = await Promise.all([
       getStatsService(),
@@ -378,4 +383,3 @@ export const emitLiveDashboardService = async (notification?: { title: string; m
     console.error("Failed to emit live stats:", error);
   }
 };
-

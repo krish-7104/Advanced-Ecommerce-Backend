@@ -52,7 +52,7 @@ export const registerUserService = async (payload: RegisterUserPayload) => {
     emitLiveDashboardService({
       title: "New Customer",
       message: `${user.firstName} ${user.lastName} has just joined!`,
-      type: "info"
+      type: "info",
     });
 
     // Access token

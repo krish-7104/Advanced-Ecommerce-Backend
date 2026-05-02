@@ -23,7 +23,7 @@ const parseAttributes = (raw: unknown): ParsedAttributes => {
 
 export const createCheckoutSessionService = async (
   orderId: string,
-  userId: string
+  userId: string,
 ) => {
   const order = await prisma.order.findFirst({
     where: { id: orderId, userId },
@@ -45,7 +45,7 @@ export const createCheckoutSessionService = async (
   if (existingPayment) {
     try {
       const session = await stripe.checkout.sessions.retrieve(
-        existingPayment.intentId
+        existingPayment.intentId,
       );
       if (session.status === "open" && session.url) {
         return { url: session.url, sessionId: session.id };
@@ -105,7 +105,7 @@ export const createCheckoutSessionService = async (
       },
       {
         idempotencyKey: `checkout_${orderId}_${Date.now()}`,
-      }
+      },
     );
   } catch (err: any) {
     throw new ApiError(500, err?.message || "Stripe checkout creation failed");
@@ -136,7 +136,7 @@ export const createCheckoutSessionService = async (
 export const syncCheckoutSessionService = async (
   orderId: string,
   userId: string,
-  checkoutSessionId?: string
+  checkoutSessionId?: string,
 ) => {
   const order = await prisma.order.findFirst({
     where: { id: orderId, userId },
@@ -224,7 +224,8 @@ export const syncCheckoutSessionService = async (
   emitLiveDashboardService({
     title: "Order Paid",
     message: `Order #${orderId} has been successfully paid!`,
-    type: "success"
+    type: "success",
+    orderId: orderId,
   });
 
   return {
@@ -284,7 +285,8 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
           emitLiveDashboardService({
             title: "Order Paid",
             message: `A new order has been paid via Stripe!`,
-            type: "success"
+            type: "success",
+            orderId: orderId,
           });
         }
 
@@ -353,7 +355,8 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
             emitLiveDashboardService({
               title: "Order Paid",
               message: `Payment received for order #${fallback.orderId}`,
-              type: "success"
+              type: "success",
+              orderId: fallback.orderId,
             });
           }
           break;
@@ -361,7 +364,7 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
 
         if (!payment) {
           console.error(
-            `Payment not found for payment intent ${paymentIntentId}`
+            `Payment not found for payment intent ${paymentIntentId}`,
           );
           return;
         }
@@ -383,7 +386,8 @@ export const stripePaymentWebhookService = async (event: Stripe.Event) => {
         emitLiveDashboardService({
           title: "Order Paid",
           message: `Payment confirmed for order #${payment.orderId}`,
-          type: "success"
+          type: "success",
+          orderId: payment.orderId,
         });
 
         break;
