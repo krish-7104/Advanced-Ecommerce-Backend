@@ -167,7 +167,7 @@ export const getAllProductsService = async ({
       sort || "default"
     );
     const cached = await getCache(cacheKey);
-    if (cached) return cached;
+    if (cached) return cached as any;
 
     const shouldPaginate =
       typeof page === "number" && typeof limit === "number";

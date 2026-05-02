@@ -181,7 +181,7 @@ export const getUserOrdersService = async (
     status || "all"
   );
   const cached = await getCache(cacheKey);
-  if (cached) return cached;
+  if (cached) return cached as any;
 
   const where: any = {
     userId: userId,
@@ -433,7 +433,7 @@ export const getAllOrdersService = async (queryParams: OrderQueryParams) => {
     status || "all"
   );
   const cached = await getCache(cacheKey);
-  if (cached) return cached;
+  if (cached) return cached as any;
 
   const where: any = {};
 

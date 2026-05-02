@@ -32,7 +32,7 @@ export const logger = createLogger({
       json: true,
       format: format.json(),
       replaceTimestamp: true,
-      onConnectionError: (err) =>
+      onConnectionError: (err: Error) =>
         console.error("[Loki] Connection error:", err.message),
     }),
   ],
